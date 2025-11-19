@@ -1,0 +1,7 @@
+# Placeholder for supervision-service configuration
+# This file will be read by Config Server
+
+spring:
+  profiles: dev
+
+# Add service-specific configuration here

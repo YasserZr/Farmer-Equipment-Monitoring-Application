@@ -1,0 +1,108 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: farmers-service
+          uri: lb://farmers-service
+          predicates:
+            - Path=/api/farmers/**
+          filters:
+            - RewritePath=/api/farmers/(?<segment>.*), /${segment}
+            - name: CircuitBreaker
+              args:
+                name: farmersCircuitBreaker
+                fallbackUri: forward:/fallback/farmers
+        
+        - id: equipment-service
+          uri: lb://equipment-service
+          predicates:
+            - Path=/api/equipment/**
+          filters:
+            - RewritePath=/api/equipment/(?<segment>.*), /${segment}
+            - name: CircuitBreaker
+              args:
+                name: equipmentCircuitBreaker
+                fallbackUri: forward:/fallback/equipment
+        
+        - id: supervision-service
+          uri: lb://supervision-service
+          predicates:
+            - Path=/api/supervision/**
+          filters:
+            - RewritePath=/api/supervision/(?<segment>.*), /${segment}
+            - name: CircuitBreaker
+              args:
+                name: supervisionCircuitBreaker
+                fallbackUri: forward:/fallback/supervision
+      
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG
+    com.farm.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      farmersCircuitBreaker:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+        permitted-number-of-calls-in-half-open-state: 3
+      equipmentCircuitBreaker:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000
+      supervisionCircuitBreaker:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10000

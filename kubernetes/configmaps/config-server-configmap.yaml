@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-server-config
+data:
+  git.uri: "https://github.com/your-org/config-repo.git"
+  git.default-label: "main"
