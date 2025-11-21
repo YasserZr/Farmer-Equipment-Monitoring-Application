@@ -1,25 +1,31 @@
 server:
   port: 8083
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
   application:
     name: supervision-service
+  
   datasource:
     url: jdbc:postgresql://localhost:5432/supervision_db
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+  
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: false
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
+        use_sql_comments: true
+        jdbc:
+          time_zone: UTC
+  
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
@@ -27,50 +33,57 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
     listener:
       simple:
-        acknowledge-mode: manual
+        acknowledge-mode: auto
         prefetch: 10
-        retry:
-          enabled: true
-          initial-interval: 1000
-          max-attempts: 3
-          multiplier: 2
+        concurrency: 3
+        max-concurrency: 10
+        default-requeue-rejected: false
+    template:
+      exchange: equipment-events
+      routing-key: equipment.#
 
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${random.value}
+# RabbitMQ Queue configuration
+rabbitmq:
+  exchange:
+    name: equipment-events
+  queue:
+    supervision: supervision-events-queue
+    dlq: dlq-equipment-events
+  routing-key:
+    pattern: equipment.#
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-  tracing:
-    sampling:
-      probability: 1.0
+# WebSocket Configuration
+websocket:
+  allowed-origins: "*"
+  endpoint: /ws-events
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  show-actuator: true
 
 logging:
   level:
     root: INFO
     com.farm.supervision: DEBUG
+    org.springframework.amqp: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
 
-# RabbitMQ Queue configuration
-rabbitmq:
-  queue:
-    telemetry: supervision.telemetry
-    alarms: supervision.alarms
-    dlq: supervision.dlq
+# Application Metadata
+info:
+  app:
+    name: Supervision Service
+    description: Equipment Event Monitoring and Supervision
+    version: 1.0.0
