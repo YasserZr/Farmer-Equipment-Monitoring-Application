@@ -1,25 +1,31 @@
 server:
   port: 8082
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
   application:
     name: equipment-service
+  
   datasource:
     url: jdbc:postgresql://localhost:5432/equipment_db
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+  
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: false
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
+        use_sql_comments: true
+        jdbc:
+          time_zone: UTC
+  
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
@@ -27,44 +33,75 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
     publisher-confirms: true
     publisher-returns: true
+    template:
+      exchange: equipment-events
+      routing-key: equipment.#
 
-eureka:
+# RabbitMQ Exchange and Queue configuration
+rabbitmq:
+  exchange:
+    name: equipment-events
+  queue:
+    name: equipment-events-queue
+  routing-key:
+    pattern: equipment.#
+
+# Feign Client Configuration
+feign:
   client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${random.value}
+    config:
+      farmers-service:
+        url: ${FARMERS_SERVICE_URL:http://localhost:8081}
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: full
+  circuitbreaker:
+    enabled: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-  tracing:
-    sampling:
-      probability: 1.0
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      farmersService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.net.ConnectException
+  timelimiter:
+    instances:
+      farmersService:
+        timeoutDuration: 10s
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  show-actuator: true
 
 logging:
   level:
     root: INFO
     com.farm.equipment: DEBUG
+    org.springframework.cloud.openfeign: DEBUG
+    org.springframework.amqp: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
 
-# RabbitMQ Exchange and Queue configuration
-rabbitmq:
-  exchange:
-    equipment: equipment.status
-  routing-key:
-    pump: pump.*.status
-    sensor: sensor.*.telemetry
+# Application Metadata
+info:
+  app:
+    name: Equipment Service
+    description: Connected Equipment Management (Pumps and Sensors)
+    version: 1.0.0
