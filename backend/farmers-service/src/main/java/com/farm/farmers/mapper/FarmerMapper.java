@@ -6,7 +6,6 @@ import com.farm.farmers.dto.response.FarmerDTO;
 import com.farm.farmers.model.Farmer;
 import org.mapstruct.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**

@@ -1,6 +1,8 @@
 package com.farm.farmers.repository;
 
 import com.farm.farmers.model.Farm;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,6 +26,14 @@ public interface FarmRepository extends JpaRepository<Farm, UUID> {
      * @return list of farms owned by the farmer
      */
     List<Farm> findByFarmerId(UUID farmerId);
+    
+    /**
+     * Find all farms belonging to a specific farmer (paginated)
+     * @param farmerId the farmer's UUID
+     * @param pageable pagination parameters
+     * @return page of farms owned by the farmer
+     */
+    Page<Farm> findByFarmerId(UUID farmerId, Pageable pageable);
     
     /**
      * Find farms by name (case-insensitive partial match)
@@ -62,6 +72,15 @@ public interface FarmRepository extends JpaRepository<Farm, UUID> {
     List<Farm> findByAreaBetween(BigDecimal minArea, BigDecimal maxArea);
     
     /**
+     * Find farms within an area range (paginated)
+     * @param minArea minimum area
+     * @param maxArea maximum area
+     * @param pageable pagination parameters
+     * @return page of farms within the area range
+     */
+    Page<Farm> findByAreaBetween(BigDecimal minArea, BigDecimal maxArea, Pageable pageable);
+    
+    /**
      * Count farms belonging to a specific farmer
      * @param farmerId the farmer's UUID
      * @return count of farms
@@ -91,6 +110,14 @@ public interface FarmRepository extends JpaRepository<Farm, UUID> {
      */
     @Query("SELECT f FROM Farm f WHERE f.area > :areaThreshold ORDER BY f.area DESC")
     List<Farm> findLargeFarms(@Param("areaThreshold") BigDecimal areaThreshold);
+    
+    /**
+     * Find large farms (area >= 100, paginated)
+     * @param pageable pagination parameters
+     * @return page of large farms
+     */
+    @Query("SELECT f FROM Farm f WHERE f.area >= 100 ORDER BY f.area DESC")
+    Page<Farm> findLargeFarms(Pageable pageable);
     
     /**
      * Get total area of all farms for a specific farmer
@@ -128,6 +155,17 @@ public interface FarmRepository extends JpaRepository<Farm, UUID> {
                           @Param("location") String location,
                           @Param("minArea") BigDecimal minArea,
                           @Param("maxArea") BigDecimal maxArea);
+    
+    /**
+     * Search farms by name or location (paginated)
+     * @param searchTerm search term for name or location
+     * @param pageable pagination parameters
+     * @return page of matching farms
+     */
+    @Query("SELECT f FROM Farm f WHERE " +
+           "LOWER(f.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(f.location) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<Farm> searchFarms(@Param("searchTerm") String searchTerm, Pageable pageable);
     
     /**
      * Get average farm area across all farms

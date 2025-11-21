@@ -2,6 +2,8 @@ package com.farm.farmers.repository;
 
 import com.farm.farmers.model.Farmer;
 import com.farm.farmers.model.FarmerRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,6 +43,14 @@ public interface FarmerRepository extends JpaRepository<Farmer, UUID> {
     List<Farmer> findByRole(FarmerRole role);
     
     /**
+     * Find all farmers with a specific role (paginated)
+     * @param role the farmer role
+     * @param pageable pagination parameters
+     * @return page of farmers with the specified role
+     */
+    Page<Farmer> findByRole(FarmerRole role, Pageable pageable);
+    
+    /**
      * Find farmers by role and registered after a certain date
      * @param role the farmer role
      * @param date the registration date threshold
@@ -54,6 +64,14 @@ public interface FarmerRepository extends JpaRepository<Farmer, UUID> {
      * @return list of matching farmers
      */
     List<Farmer> findByNameContainingIgnoreCase(String name);
+    
+    /**
+     * Find farmers whose names contain the search term (case-insensitive, paginated)
+     * @param name the search term
+     * @param pageable pagination parameters
+     * @return page of matching farmers
+     */
+    Page<Farmer> findByNameContainingIgnoreCase(String name, Pageable pageable);
     
     /**
      * Find all farmers registered within a date range
@@ -85,6 +103,14 @@ public interface FarmerRepository extends JpaRepository<Farmer, UUID> {
     List<Farmer> findFarmersWithAdminPrivileges();
     
     /**
+     * Find farmers with admin privileges (OWNER or MANAGER, paginated)
+     * @param pageable pagination parameters
+     * @return page of farmers with admin roles
+     */
+    @Query("SELECT f FROM Farmer f WHERE f.role IN ('OWNER', 'MANAGER')")
+    Page<Farmer> findFarmersWithAdminPrivileges(Pageable pageable);
+    
+    /**
      * Find farmers who own/manage at least a certain number of farms
      * @param minFarmCount minimum number of farms
      * @return list of farmers with at least minFarmCount farms
@@ -94,11 +120,20 @@ public interface FarmerRepository extends JpaRepository<Farmer, UUID> {
     
     /**
      * Find farmers registered in the last N days
-     * @param days number of days to look back
+     * @param cutoffDate cutoff date
      * @return list of recently registered farmers
      */
     @Query("SELECT f FROM Farmer f WHERE f.registrationDate >= :cutoffDate ORDER BY f.registrationDate DESC")
     List<Farmer> findRecentlyRegisteredFarmers(@Param("cutoffDate") LocalDateTime cutoffDate);
+    
+    /**
+     * Find farmers registered in the last N days (paginated)
+     * @param cutoffDate cutoff date
+     * @param pageable pagination parameters
+     * @return page of recently registered farmers
+     */
+    @Query("SELECT f FROM Farmer f WHERE f.registrationDate >= :cutoffDate ORDER BY f.registrationDate DESC")
+    Page<Farmer> findRecentlyRegisteredFarmers(@Param("cutoffDate") LocalDateTime cutoffDate, Pageable pageable);
     
     /**
      * Search farmers by multiple criteria
