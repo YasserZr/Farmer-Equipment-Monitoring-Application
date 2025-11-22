@@ -1,7 +1,39 @@
-# Placeholder for farmers-service configuration
-# This file will be read by Config Server
+# Farmers Service Configuration
+
+server:
+  port: 8081
 
 spring:
-  profiles: dev
+  application:
+    name: farmers-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/farmers_db
+    username: postgres
+    password: '{cipher}AQA9hKl4mN3pQ7sT8uV2wX5yZ1aBcDeFgHiJkLmNoPqRsTuVwXyZ'
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: false
 
-# Add service-specific configuration here
+# SpringDoc OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.farm.farmers: DEBUG

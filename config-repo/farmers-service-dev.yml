@@ -1,0 +1,17 @@
+# Farmers Service - Development Profile
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/farmers_db_dev
+  
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+logging:
+  level:
+    root: DEBUG
+    com.farm.farmers: TRACE
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

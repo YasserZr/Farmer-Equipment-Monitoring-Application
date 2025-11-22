@@ -1,0 +1,25 @@
+# Supervision Service - Development Profile
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/supervision_db_dev
+  
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+websocket:
+  allowed-origins: "http://localhost:3000"
+
+logging:
+  level:
+    root: DEBUG
+    com.farm.supervision: TRACE
+    org.springframework.amqp: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG

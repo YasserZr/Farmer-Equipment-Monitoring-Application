@@ -1,7 +1,65 @@
-# Placeholder for supervision-service configuration
-# This file will be read by Config Server
+# Supervision Service Configuration
+
+server:
+  port: 8083
 
 spring:
-  profiles: dev
+  application:
+    name: supervision-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/supervision_db
+    username: postgres
+    password: '{cipher}AQA9hKl4mN3pQ7sT8uV2wX5yZ1aBcDeFgHiJkLmNoPqRsTuVwXyZ'
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: '{cipher}BQB1cKm5nO4qR8tU9vW3xY6zA2bCdEfGhIjKlMnOpQrStUvWxYz'
+    listener:
+      simple:
+        acknowledge-mode: auto
+        prefetch: 10
+        concurrency: 3
+        max-concurrency: 10
+        default-requeue-rejected: false
 
-# Add service-specific configuration here
+# RabbitMQ Queue
+rabbitmq:
+  exchange:
+    name: equipment-events
+  queue:
+    supervision: supervision-events-queue
+    dlq: dlq-equipment-events
+  routing-key:
+    pattern: equipment.#
+
+# WebSocket
+websocket:
+  allowed-origins: "*"
+  endpoint: /ws-events
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.farm.supervision: DEBUG

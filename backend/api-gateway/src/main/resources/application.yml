@@ -1,0 +1,179 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      # Enable service discovery via Eureka
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      
+      # Route configurations
+      routes:
+        # Farmers Service Routes
+        - id: farmers-service
+          uri: lb://farmers-service
+          predicates:
+            - Path=/api/farmers/**
+          filters:
+            - RewritePath=/api/farmers/(?<segment>.*), /${segment}
+            - name: CircuitBreaker
+              args:
+                name: farmersCircuitBreaker
+                fallbackUri: forward:/fallback/farmers
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+        
+        # Equipment Service Routes
+        - id: equipment-service
+          uri: lb://equipment-service
+          predicates:
+            - Path=/api/equipment/**,/api/pumps/**,/api/sensors/**
+          filters:
+            - RewritePath=/api/equipment/(?<segment>.*), /${segment}
+            - name: CircuitBreaker
+              args:
+                name: equipmentCircuitBreaker
+                fallbackUri: forward:/fallback/equipment
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+        
+        # Supervision Service Routes
+        - id: supervision-service
+          uri: lb://supervision-service
+          predicates:
+            - Path=/api/supervision/**,/api/events/**,/api/statistics/**
+          filters:
+            - RewritePath=/api/supervision/(?<segment>.*), /${segment}
+            - name: CircuitBreaker
+              args:
+                name: supervisionCircuitBreaker
+                fallbackUri: forward:/fallback/supervision
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+        
+        # WebSocket route for Supervision Service
+        - id: supervision-websocket
+          uri: lb:ws://supervision-service
+          predicates:
+            - Path=/ws-events/**
+          filters:
+            - RewritePath=/ws-events/(?<segment>.*), /ws-events/${segment}
+      
+      # Global CORS configuration
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+      
+      # Default filters applied to all routes
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+  
+  # Redis configuration for rate limiting
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      farmersCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      equipmentCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      supervisionCircuitBreaker:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  
+  timelimiter:
+    instances:
+      farmersCircuitBreaker:
+        timeoutDuration: 5s
+      equipmentCircuitBreaker:
+        timeoutDuration: 5s
+      supervisionCircuitBreaker:
+        timeoutDuration: 5s
+
+# Management and monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.farm.gateway: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web.reactive: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
+
+# Application metadata
+info:
+  app:
+    name: API Gateway
+    description: Central gateway for all microservices with routing, rate limiting, and circuit breaking
+    version: 1.0.0

@@ -1,7 +1,73 @@
-# Placeholder for equipment-service configuration
-# This file will be read by Config Server
+# Equipment Service Configuration
+
+server:
+  port: 8082
 
 spring:
-  profiles: dev
+  application:
+    name: equipment-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/equipment_db
+    username: postgres
+    password: '{cipher}AQA9hKl4mN3pQ7sT8uV2wX5yZ1aBcDeFgHiJkLmNoPqRsTuVwXyZ'
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: '{cipher}BQB1cKm5nO4qR8tU9vW3xY6zA2bCdEfGhIjKlMnOpQrStUvWxYz'
+    publisher-confirms: true
+    publisher-returns: true
 
-# Add service-specific configuration here
+# RabbitMQ Exchange and Queue
+rabbitmq:
+  exchange:
+    name: equipment-events
+  queue:
+    name: equipment-events-queue
+  routing-key:
+    pattern: equipment.#
+
+# Feign Client
+feign:
+  client:
+    config:
+      farmers-service:
+        url: http://localhost:8081
+        connectTimeout: 5000
+        readTimeout: 10000
+        loggerLevel: full
+  circuitbreaker:
+    enabled: true
+
+# Resilience4j
+resilience4j:
+  circuitbreaker:
+    instances:
+      farmersService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.farm.equipment: DEBUG

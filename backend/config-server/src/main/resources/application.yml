@@ -1,0 +1,70 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  
+  cloud:
+    config:
+      server:
+        git:
+          # Use local file system (for development)
+          # In production, use actual Git repository URL
+          uri: file:///${user.home}/config-repo
+          # For remote Git repository, use:
+          # uri: https://github.com/yourusername/config-repo
+          # username: ${GIT_USERNAME}
+          # password: ${GIT_PASSWORD}
+          default-label: main
+          clone-on-start: true
+          search-paths:
+            - '{application}'
+        # Fallback to native (local filesystem) if Git fails
+        native:
+          search-locations: classpath:/config
+  
+  # Security for encryption
+  # To generate a key: keytool -genkeypair -alias config-server-key -keyalg RSA -keysize 2048 -keystore config-server.jks -validity 3650
+  # For symmetric encryption, set: encrypt.key=mySecretKey
+  security:
+    user:
+      name: ${CONFIG_SERVER_USERNAME:configuser}
+      password: ${CONFIG_SERVER_PASSWORD:configpass}
+
+# Encryption key (for development only - use asymmetric encryption in production)
+encrypt:
+  key: ${ENCRYPT_KEY:MySecretEncryptionKey123}
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,env
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.config: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n"
+
+info:
+  app:
+    name: Config Server
+    description: Centralized Configuration Management
+    version: 1.0.0

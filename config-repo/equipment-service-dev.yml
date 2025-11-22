@@ -1,0 +1,28 @@
+# Equipment Service - Development Profile
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/equipment_db_dev
+  
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+
+feign:
+  client:
+    config:
+      farmers-service:
+        url: http://localhost:8081
+        loggerLevel: full
+
+logging:
+  level:
+    root: DEBUG
+    com.farm.equipment: TRACE
+    org.springframework.cloud.openfeign: DEBUG
+    org.springframework.amqp: DEBUG
