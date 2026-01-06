@@ -216,3 +216,19 @@ export function useFarmEquipmentReport(farmId: string) {
     enabled: !!farmId,
   });
 }
+
+// Fetch maintenance schedule
+export function useMaintenanceSchedule() {
+  return useQuery<any[]>({
+    queryKey: ['maintenance', 'schedule'],
+    queryFn: () => apiClient.get('/api/maintenance'),
+  });
+}
+
+// Fetch equipment statistics
+export function useEquipmentStatistics() {
+  return useQuery<any>({
+    queryKey: [EQUIPMENT_KEY, 'statistics'],
+    queryFn: () => apiClient.get('/api/equipment/statistics'),
+  });
+}

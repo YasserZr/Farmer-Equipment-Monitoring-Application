@@ -16,17 +16,17 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  Wrench
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Farmers', href: '/dashboard/farmers', icon: Users },
-  { name: 'Farms', href: '/dashboard/farms', icon: Map },
-  { name: 'Pumps', href: '/dashboard/pumps', icon: Droplet },
-  { name: 'Sensors', href: '/dashboard/sensors', icon: Activity },
+  { name: 'Equipment', href: '/dashboard/equipment', icon: Activity },
+  { name: 'Maintenance', href: '/dashboard/equipment/maintenance', icon: Wrench },
+  { name: 'Reports', href: '/dashboard/equipment/reports', icon: BarChart3 },
   { name: 'Events', href: '/dashboard/events', icon: Bell },
-  { name: 'Statistics', href: '/dashboard/statistics', icon: BarChart3 },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
