@@ -1,5 +1,5 @@
 {
-  "name": "farm-monitoring-frontend",
+  "name": "farmer-equipment-monitoring-frontend",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -7,25 +7,35 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "^14.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "axios": "^1.6.0",
-    "swr": "^2.2.4"
+    "next": "14.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@tanstack/react-query": "^5.28.4",
+    "@tanstack/react-query-devtools": "^5.28.4",
+    "axios": "^1.6.8",
+    "zustand": "^4.5.2",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.2",
+    "lucide-react": "^0.365.0",
+    "date-fns": "^3.6.0",
+    "react-hook-form": "^7.51.2",
+    "zod": "^3.22.4",
+    "@hookform/resolvers": "^3.3.4",
+    "sonner": "^1.4.41",
+    "recharts": "^2.12.3"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "typescript": "^5.3.0",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/jest-dom": "^6.0.0",
-    "jest": "^29.0.0",
-    "jest-environment-jsdom": "^29.0.0"
+    "typescript": "^5.4.3",
+    "@types/node": "^20.12.5",
+    "@types/react": "^18.2.74",
+    "@types/react-dom": "^18.2.24",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3"
   }
 }
