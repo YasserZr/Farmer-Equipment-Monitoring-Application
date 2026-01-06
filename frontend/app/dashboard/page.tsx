@@ -1,183 +1,195 @@
 'use client';
 
-import { useDashboardStatistics } from '@/hooks/use-events';
-import { useFarmerStatistics } from '@/hooks/use-farmers';
-import { Activity, AlertTriangle, CheckCircle, Users, Droplet, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { OverviewCards } from '@/components/dashboard/overview-cards';
+import { EventsTimeline } from '@/components/dashboard/events-timeline';
+import { StatusChart } from '@/components/dashboard/status-chart';
+import { AlertsPanel } from '@/components/dashboard/alerts-panel';
+import { MaintenanceTimeline } from '@/components/dashboard/maintenance-timeline';
+import {
+  useDashboardStats,
+  useEquipmentStatusDistribution,
+  useActiveAlerts,
+  useUpcomingMaintenance,
+} from '@/hooks/use-dashboard';
+import { useWebSocket } from '@/hooks/use-websocket';
+import {
+  exportDashboardSummary,
+  exportEvents,
+  exportAlerts,
+  exportToPDF,
+} from '@/lib/export-utils';
+import {
+  Activity,
+  AlertTriangle,
+  Users,
+  Droplet,
+  Zap,
+  Download,
+  FileText,
+  RefreshCw,
+} from 'lucide-react';
 
 export default function DashboardPage() {
-  const { data: eventStats, isLoading: eventsLoading } = useDashboardStatistics();
-  const { data: farmerStats, isLoading: farmersLoading } = useFarmerStatistics();
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const stats = [
+  // Real-time WebSocket connection
+  const { isConnected } = useWebSocket({ enabled: true });
+
+  // Dashboard data hooks
+  const stats = useDashboardStats();
+  const { statusData, equipmentTypeData } = useEquipmentStatusDistribution();
+  const alerts = useActiveAlerts();
+  const { data: maintenanceItems, isLoading: maintenanceLoading } = useUpcomingMaintenance();
+
+  // Overview statistics
+  const overviewStats = [
     {
       name: 'Total Farmers',
-      value: farmerStats?.totalFarmers || 0,
+      value: stats.totalFarmers,
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
       change: '+12%',
-      changeType: 'increase',
+      changeType: 'increase' as const,
+      description: 'Registered farmers',
     },
     {
-      name: 'Active Equipment',
-      value: eventStats?.totalEvents || 0,
-      icon: Droplet,
+      name: 'Total Equipment',
+      value: stats.totalEquipment,
+      icon: Activity,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
       change: '+8%',
-      changeType: 'increase',
+      changeType: 'increase' as const,
+      description: `${stats.totalPumps} pumps, ${stats.totalSensors} sensors`,
     },
     {
-      name: 'Critical Alerts',
-      value: eventStats?.criticalEvents || 0,
+      name: 'Active Equipment',
+      value: stats.activeEquipment,
+      icon: Zap,
+      color: 'text-primary-600',
+      bgColor: 'bg-primary-100',
+      change: '+5%',
+      changeType: 'increase' as const,
+      description: 'Currently operational',
+    },
+    {
+      name: 'Active Alerts',
+      value: alerts.length,
       icon: AlertTriangle,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
-      change: '-4%',
-      changeType: 'decrease',
-    },
-    {
-      name: 'Resolved Events',
-      value: eventStats?.acknowledgedEvents || 0,
-      icon: CheckCircle,
-      color: 'text-primary-600',
-      bgColor: 'bg-primary-100',
-      change: '+16%',
-      changeType: 'increase',
+      change: alerts.length > 0 ? `${alerts.filter(a => a.severity === 'high').length} critical` : 'All clear',
+      changeType: alerts.length > 10 ? 'increase' as const : 'decrease' as const,
+      description: 'Requires attention',
     },
   ];
 
-  if (eventsLoading || farmersLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
-  }
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    window.location.reload();
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">Welcome back! Here's an overview of your equipment monitoring system.</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">{stat.value}</p>
-              </div>
-              <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <TrendingUp
-                className={`w-4 h-4 mr-1 ${
-                  stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                }`}
-              />
-              <span
-                className={`font-medium ${
-                  stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {stat.change}
-              </span>
-              <span className="ml-1 text-gray-600">from last month</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Recent Events */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Events</h2>
+    <div className="space-y-6 dashboard-content">
+      {/* Header with Actions */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="mt-2 text-muted-foreground">
+            Welcome back! Here's an overview of your equipment monitoring system.
+          </p>
         </div>
-        <div className="p-6">
-          {eventStats?.recentEvents && eventStats.recentEvents.length > 0 ? (
-            <div className="space-y-4">
-              {eventStats.recentEvents.slice(0, 5).map((event) => (
-                <div key={event.id} className="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg">
-                  <div
-                    className={`flex-shrink-0 w-2 h-2 mt-2 rounded-full ${
-                      event.severity === 'CRITICAL'
-                        ? 'bg-red-500'
-                        : event.severity === 'WARNING'
-                        ? 'bg-yellow-500'
-                        : 'bg-blue-500'
-                    }`}
-                  ></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{event.message}</p>
-                    <p className="text-sm text-gray-600 mt-1">Equipment ID: {event.equipmentId}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(event.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                  <span
-                    className={`flex-shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      event.severity === 'CRITICAL'
-                        ? 'bg-red-100 text-red-800'
-                        : event.severity === 'WARNING'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}
-                  >
-                    {event.severity}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-500 py-8">No recent events</p>
-          )}
+        <div className="flex items-center gap-2 no-print">
+          {/* Real-time indicator */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-400'} animate-pulse`}></div>
+            <span className="text-sm">{isConnected ? 'Live' : 'Offline'}</span>
+          </div>
+          
+          {/* Export actions */}
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => exportDashboardSummary(stats)}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportToPDF}>
+            <FileText className="w-4 h-4 mr-2" />
+            Export PDF
+          </Button>
         </div>
       </div>
 
-      {/* Event Statistics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Events by Type</h3>
-          <div className="space-y-3">
-            {eventStats?.eventsByType &&
-              Object.entries(eventStats.eventsByType).map(([type, count]) => (
-                <div key={type} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">{type.replace(/_/g, ' ')}</span>
-                  <span className="text-sm font-semibold text-gray-900">{count}</span>
-                </div>
-              ))}
+      {/* Overview Cards */}
+      <OverviewCards stats={overviewStats} />
+
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - 2/3 width */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Events Timeline */}
+          <EventsTimeline events={stats.recentEvents} showFilters={true} />
+
+          {/* Equipment Status Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <StatusChart
+              data={equipmentTypeData}
+              type="pie"
+              title="Equipment Distribution"
+              description="By equipment type"
+            />
+            <StatusChart
+              data={statusData.map(item => ({
+                name: item.name,
+                value: item.pumps + item.sensors,
+              }))}
+              type="bar"
+              title="Status Distribution"
+              description="Active vs inactive equipment"
+            />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Events by Severity</h3>
-          <div className="space-y-3">
-            {eventStats?.eventsBySeverity &&
-              Object.entries(eventStats.eventsBySeverity).map(([severity, count]) => (
-                <div key={severity} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full mr-2 ${
-                        severity === 'CRITICAL'
-                          ? 'bg-red-500'
-                          : severity === 'WARNING'
-                          ? 'bg-yellow-500'
-                          : 'bg-blue-500'
-                      }`}
-                    ></div>
-                    <span className="text-sm text-gray-600">{severity}</span>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">{count}</span>
-                </div>
-              ))}
-          </div>
+        {/* Right Column - 1/3 width */}
+        <div className="space-y-6">
+          {/* Active Alerts Panel */}
+          <AlertsPanel alerts={alerts} />
+
+          {/* Maintenance Timeline */}
+          <MaintenanceTimeline items={maintenanceItems || []} isLoading={maintenanceLoading} />
+        </div>
+      </div>
+
+      {/* Quick Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="p-4 border rounded-lg">
+          <p className="text-xs text-muted-foreground">Pumps</p>
+          <p className="text-2xl font-bold">{stats.totalPumps}</p>
+        </div>
+        <div className="p-4 border rounded-lg">
+          <p className="text-xs text-muted-foreground">Sensors</p>
+          <p className="text-2xl font-bold">{stats.totalSensors}</p>
+        </div>
+        <div className="p-4 border rounded-lg">
+          <p className="text-xs text-muted-foreground">Low Battery</p>
+          <p className="text-2xl font-bold text-yellow-600">{stats.lowBatterySensors}</p>
+        </div>
+        <div className="p-4 border rounded-lg">
+          <p className="text-xs text-muted-foreground">Critical</p>
+          <p className="text-2xl font-bold text-red-600">{stats.criticalSensors}</p>
+        </div>
+        <div className="p-4 border rounded-lg">
+          <p className="text-xs text-muted-foreground">Offline</p>
+          <p className="text-2xl font-bold text-gray-600">{stats.offlineSensors}</p>
+        </div>
+        <div className="p-4 border rounded-lg">
+          <p className="text-xs text-muted-foreground">Maintenance</p>
+          <p className="text-2xl font-bold text-orange-600">{stats.maintenancePumps}</p>
         </div>
       </div>
     </div>
