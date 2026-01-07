@@ -113,7 +113,6 @@ lerna-debug.log*
 
 # Docker
 *.env
-.dockerignore
 docker-compose.override.yml
 
 # Kubernetes secrets

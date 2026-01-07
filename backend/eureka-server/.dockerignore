@@ -1,0 +1,28 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+.gradle
+build/
+
+# IDE
+.idea
+*.iws
+*.iml
+*.ipr
+.vscode/
+.settings
+.classpath
+.project
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
