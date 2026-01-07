@@ -1,0 +1,1163 @@
+openapi: 3.0.3
+info:
+  title: Farmers Service API
+  description: |
+    Farmer and Farm Management Microservice API
+    
+    This service provides comprehensive farmer and farm management capabilities including:
+    - Farmer registration and profile management
+    - Farm creation and management
+    - Role-based access control
+    - Search and filtering capabilities
+    
+    ## Authentication
+    All endpoints require JWT Bearer token authentication via API Gateway.
+    
+    ## Base URL
+    Production: `https://api.farmmonitoring.com/api`
+    Development: `http://localhost:8080/api`
+    
+  version: 1.0.0
+  contact:
+    name: Farm Monitoring Support
+    email: support@farmmonitoring.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: http://localhost:8081
+    description: Direct service access (bypassing gateway)
+  - url: https://api.farmmonitoring.com
+    description: Production server
+
+tags:
+  - name: Farmers
+    description: Farmer management operations
+  - name: Farms
+    description: Farm management operations
+
+paths:
+  /api/farmers:
+    get:
+      tags:
+        - Farmers
+      summary: Get all farmers
+      description: Retrieve all farmers with pagination support
+      operationId: getAllFarmers
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-indexed)
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: sort
+          in: query
+          description: Sort field and direction (e.g., name,asc)
+          required: false
+          schema:
+            type: string
+            default: name
+      responses:
+        '200':
+          description: Farmers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmerDTO'
+              example:
+                content:
+                  - id: 123e4567-e89b-12d3-a456-426614174000
+                    name: John Doe
+                    email: john.doe@example.com
+                    phone: +1-555-0123
+                    role: OWNER
+                    region: North Region
+                    registrationDate: 2024-01-15T10:30:00Z
+                  - id: 123e4567-e89b-12d3-a456-426614174001
+                    name: Jane Smith
+                    email: jane.smith@example.com
+                    phone: +1-555-0124
+                    role: MANAGER
+                    region: South Region
+                    registrationDate: 2024-02-20T14:45:00Z
+                pageable:
+                  pageNumber: 0
+                  pageSize: 20
+                  sort:
+                    sorted: true
+                    unsorted: false
+                totalElements: 42
+                totalPages: 3
+                last: false
+                first: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    post:
+      tags:
+        - Farmers
+      summary: Create a new farmer
+      description: Register a new farmer in the system
+      operationId: createFarmer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFarmerRequest'
+            example:
+              name: John Doe
+              email: john.doe@example.com
+              phone: +1-555-0123
+              role: OWNER
+              region: North Region
+      responses:
+        '201':
+          description: Farmer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerDTO'
+              example:
+                id: 123e4567-e89b-12d3-a456-426614174000
+                name: John Doe
+                email: john.doe@example.com
+                phone: +1-555-0123
+                role: OWNER
+                region: North Region
+                registrationDate: 2024-01-15T10:30:00Z
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: 2024-01-15T10:30:00Z
+                status: 409
+                error: Conflict
+                message: Farmer with email john.doe@example.com already exists
+                path: /api/farmers
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/{id}:
+    get:
+      tags:
+        - Farmers
+      summary: Get farmer by ID
+      description: Retrieve a farmer by their unique identifier
+      operationId: getFarmerById
+      parameters:
+        - name: id
+          in: path
+          description: Farmer unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Farmer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerDTO'
+              example:
+                id: 123e4567-e89b-12d3-a456-426614174000
+                name: John Doe
+                email: john.doe@example.com
+                phone: +1-555-0123
+                role: OWNER
+                region: North Region
+                registrationDate: 2024-01-15T10:30:00Z
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    put:
+      tags:
+        - Farmers
+      summary: Update farmer
+      description: Update farmer information
+      operationId: updateFarmer
+      parameters:
+        - name: id
+          in: path
+          description: Farmer unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFarmerRequest'
+            example:
+              name: John Doe Updated
+              email: john.doe@example.com
+              phone: +1-555-9999
+              role: MANAGER
+              region: East Region
+      responses:
+        '200':
+          description: Farmer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - Farmers
+      summary: Delete farmer
+      description: Delete a farmer from the system
+      operationId: deleteFarmer
+      parameters:
+        - name: id
+          in: path
+          description: Farmer unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Farmer deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/email/{email}:
+    get:
+      tags:
+        - Farmers
+      summary: Get farmer by email
+      description: Retrieve a farmer by their email address
+      operationId: getFarmerByEmail
+      parameters:
+        - name: email
+          in: path
+          description: Farmer email address
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Farmer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/search:
+    get:
+      tags:
+        - Farmers
+      summary: Search farmers by name
+      description: Search farmers by name (case-insensitive partial match)
+      operationId: searchFarmers
+      parameters:
+        - name: name
+          in: query
+          description: Search term for farmer name
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmerDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/role/{role}:
+    get:
+      tags:
+        - Farmers
+      summary: Get farmers by role
+      description: Retrieve all farmers with a specific role
+      operationId: getFarmersByRole
+      parameters:
+        - name: role
+          in: path
+          description: Farmer role
+          required: true
+          schema:
+            type: string
+            enum: [OWNER, MANAGER, WORKER, GUEST]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Farmers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmerDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/admins:
+    get:
+      tags:
+        - Farmers
+      summary: Get farmers with admin privileges
+      description: Retrieve all farmers with admin privileges (OWNER or MANAGER)
+      operationId: getFarmersWithAdminPrivileges
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Admin farmers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmerDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/recent:
+    get:
+      tags:
+        - Farmers
+      summary: Get recently registered farmers
+      description: Retrieve farmers registered within the specified number of days
+      operationId: getRecentlyRegisteredFarmers
+      parameters:
+        - name: days
+          in: query
+          description: Number of days to look back
+          required: false
+          schema:
+            type: integer
+            default: 30
+            minimum: 1
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Recent farmers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmerDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/{id}/exists:
+    get:
+      tags:
+        - Farmers
+      summary: Check if farmer exists
+      description: Check if a farmer with the given ID exists
+      operationId: farmerExists
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Check completed
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: true
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farmers/email/{email}/exists:
+    get:
+      tags:
+        - Farmers
+      summary: Check if email exists
+      description: Check if a farmer with the given email exists
+      operationId: emailExists
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Check completed
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: false
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farms:
+    get:
+      tags:
+        - Farms
+      summary: Get all farms
+      description: Retrieve all farms with pagination support
+      operationId: getAllFarms
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: name
+      responses:
+        '200':
+          description: Farms retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmDTO'
+              example:
+                content:
+                  - id: 223e4567-e89b-12d3-a456-426614174000
+                    name: Green Valley Farm
+                    location: North Region, Sector 5
+                    area: 150.5
+                    farmerId: 123e4567-e89b-12d3-a456-426614174000
+                    farmerName: John Doe
+                    createdAt: 2024-01-20T09:00:00Z
+                    updatedAt: 2024-01-20T09:00:00Z
+                pageable:
+                  pageNumber: 0
+                  pageSize: 20
+                totalElements: 15
+                totalPages: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    post:
+      tags:
+        - Farms
+      summary: Create a new farm
+      description: Register a new farm for a farmer
+      operationId: createFarm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFarmRequest'
+            example:
+              name: Green Valley Farm
+              location: North Region, Sector 5
+              area: 150.5
+              farmerId: 123e4567-e89b-12d3-a456-426614174000
+      responses:
+        '201':
+          description: Farm created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Farmer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Farm name already exists for this farmer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farms/{id}:
+    get:
+      tags:
+        - Farms
+      summary: Get farm by ID
+      description: Retrieve a farm by its unique identifier
+      operationId: getFarmById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Farm found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    put:
+      tags:
+        - Farms
+      summary: Update farm
+      description: Update farm information
+      operationId: updateFarm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFarmRequest'
+      responses:
+        '200':
+          description: Farm updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmDTO'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          description: Farm name already exists for this farmer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+    delete:
+      tags:
+        - Farms
+      summary: Delete farm
+      description: Delete a farm from the system
+      operationId: deleteFarm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Farm deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farms/farmer/{farmerId}:
+    get:
+      tags:
+        - Farms
+      summary: Get farms by farmer ID
+      description: Retrieve all farms belonging to a specific farmer
+      operationId: getFarmsByFarmerId
+      parameters:
+        - name: farmerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Farms retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Farmer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farms/search:
+    get:
+      tags:
+        - Farms
+      summary: Search farms
+      description: Search farms by name or location (case-insensitive)
+      operationId: searchFarms
+      parameters:
+        - name: searchTerm
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farms/area-range:
+    get:
+      tags:
+        - Farms
+      summary: Get farms by area range
+      description: Retrieve farms within a specified area range (in hectares)
+      operationId: getFarmsByAreaRange
+      parameters:
+        - name: minArea
+          in: query
+          required: true
+          schema:
+            type: number
+            format: decimal
+        - name: maxArea
+          in: query
+          required: true
+          schema:
+            type: number
+            format: decimal
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Farms retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/farms/large:
+    get:
+      tags:
+        - Farms
+      summary: Get large farms
+      description: Retrieve all large farms (area >= 100 hectares)
+      operationId: getLargeFarms
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Large farms retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageFarmDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from authentication service
+
+  schemas:
+    FarmerDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique farmer identifier
+        name:
+          type: string
+          description: Farmer's full name
+        email:
+          type: string
+          format: email
+          description: Farmer's email address
+        phone:
+          type: string
+          description: Farmer's phone number
+        role:
+          type: string
+          enum: [OWNER, MANAGER, WORKER, GUEST]
+          description: Farmer's role in the system
+        region:
+          type: string
+          description: Geographic region where farmer operates
+        registrationDate:
+          type: string
+          format: date-time
+          description: Date and time when farmer was registered
+
+    CreateFarmerRequest:
+      type: object
+      required:
+        - name
+        - email
+        - role
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Farmer's full name
+        email:
+          type: string
+          format: email
+          description: Farmer's email address (must be unique)
+        phone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+          description: Farmer's phone number in E.164 format
+        role:
+          type: string
+          enum: [OWNER, MANAGER, WORKER, GUEST]
+          description: Farmer's role in the system
+        region:
+          type: string
+          maxLength: 100
+          description: Geographic region where farmer operates
+
+    UpdateFarmerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+        role:
+          type: string
+          enum: [OWNER, MANAGER, WORKER, GUEST]
+        region:
+          type: string
+          maxLength: 100
+
+    FarmDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique farm identifier
+        name:
+          type: string
+          description: Farm name
+        location:
+          type: string
+          description: Farm physical location
+        area:
+          type: number
+          format: decimal
+          description: Farm area in hectares
+        farmerId:
+          type: string
+          format: uuid
+          description: ID of the farmer who owns this farm
+        farmerName:
+          type: string
+          description: Name of the farmer who owns this farm
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateFarmRequest:
+      type: object
+      required:
+        - name
+        - location
+        - area
+        - farmerId
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Farm name
+        location:
+          type: string
+          minLength: 5
+          maxLength: 255
+          description: Farm physical location
+        area:
+          type: number
+          format: decimal
+          minimum: 0.01
+          description: Farm area in hectares
+        farmerId:
+          type: string
+          format: uuid
+          description: ID of the farmer who will own this farm
+
+    UpdateFarmRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        location:
+          type: string
+          minLength: 5
+          maxLength: 255
+        area:
+          type: number
+          format: decimal
+          minimum: 0.01
+
+    PageFarmerDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/FarmerDTO'
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+        first:
+          type: boolean
+        numberOfElements:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+
+    PageFarmDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/FarmDTO'
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+        first:
+          type: boolean
+
+    PageableObject:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          type: object
+          properties:
+            sorted:
+              type: boolean
+            unsorted:
+              type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+
+  responses:
+    BadRequestError:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-15T10:30:00Z
+            status: 400
+            error: Bad Request
+            message: Validation failed for field 'email' - must be a valid email address
+            path: /api/farmers
+
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-15T10:30:00Z
+            status: 401
+            error: Unauthorized
+            message: JWT token is missing or invalid
+            path: /api/farmers
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-15T10:30:00Z
+            status: 404
+            error: Not Found
+            message: Farmer with ID 123e4567-e89b-12d3-a456-426614174000 not found
+            path: /api/farmers/123e4567-e89b-12d3-a456-426614174000
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-15T10:30:00Z
+            status: 500
+            error: Internal Server Error
+            message: An unexpected error occurred
+            path: /api/farmers

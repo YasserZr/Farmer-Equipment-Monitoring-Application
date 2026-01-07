@@ -1,0 +1,721 @@
+openapi: 3.0.3
+info:
+  title: Supervision Service API
+  description: |
+    Equipment Event Monitoring and Statistics Microservice API
+    
+    This service provides comprehensive equipment event monitoring and analytics capabilities including:
+    - Real-time equipment event tracking
+    - Event filtering and querying
+    - Critical event alerts
+    - Dashboard statistics and metrics
+    - Event acknowledgment workflow
+    
+    Events are received asynchronously via RabbitMQ from the Equipment Service and made available through these REST endpoints.
+    
+    ## Authentication
+    All endpoints require JWT Bearer token authentication via API Gateway.
+    
+    ## Base URL
+    Production: `https://api.farmmonitoring.com/api`
+    Development: `http://localhost:8080/api`
+    
+  version: 1.0.0
+  contact:
+    name: Farm Monitoring Support
+    email: support@farmmonitoring.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server (via API Gateway)
+  - url: http://localhost:8083
+    description: Direct service access (bypassing gateway)
+  - url: https://api.farmmonitoring.com
+    description: Production server
+
+tags:
+  - name: Events
+    description: Equipment event management operations
+  - name: Statistics
+    description: Event statistics and dashboard operations
+
+paths:
+  /api/events:
+    get:
+      tags:
+        - Events
+      summary: Get all events
+      description: |
+        Retrieve all equipment events with optional filtering and pagination.
+        Supports comprehensive filtering by farm, equipment, event type, severity, date range, and acknowledgment status.
+      operationId: getAllEvents
+      parameters:
+        - name: farmId
+          in: query
+          description: Filter by farm ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: equipmentId
+          in: query
+          description: Filter by equipment ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: eventType
+          in: query
+          description: Filter by event type
+          required: false
+          schema:
+            type: string
+            enum: [STATUS_CHANGE, ALERT, MAINTENANCE_DUE, TELEMETRY_ANOMALY, OFFLINE, ERROR]
+        - name: severity
+          in: query
+          description: Filter by severity level
+          required: false
+          schema:
+            type: string
+            enum: [INFO, WARNING, CRITICAL, EMERGENCY]
+        - name: startDate
+          in: query
+          description: Filter events from this date (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: Filter events until this date (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: acknowledged
+          in: query
+          description: Filter by acknowledgment status
+          required: false
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageEventDTO'
+              example:
+                content:
+                  - id: 523e4567-e89b-12d3-a456-426614174000
+                    farmId: 223e4567-e89b-12d3-a456-426614174000
+                    equipmentId: 323e4567-e89b-12d3-a456-426614174000
+                    equipmentName: Main Irrigation Pump
+                    eventType: STATUS_CHANGE
+                    severity: INFO
+                    message: Pump status changed from IDLE to OPERATIONAL
+                    metadata:
+                      previousStatus: IDLE
+                      newStatus: OPERATIONAL
+                      flowRate: 120.5
+                    timestamp: 2024-01-22T10:15:30Z
+                    acknowledged: false
+                    acknowledgedBy: null
+                    acknowledgedAt: null
+                    createdAt: 2024-01-22T10:15:30Z
+                  - id: 523e4567-e89b-12d3-a456-426614174001
+                    farmId: 223e4567-e89b-12d3-a456-426614174000
+                    equipmentId: 323e4567-e89b-12d3-a456-426614174000
+                    equipmentName: Main Irrigation Pump
+                    eventType: ALERT
+                    severity: CRITICAL
+                    message: Flow rate dropped below critical threshold
+                    metadata:
+                      currentFlowRate: 20.5
+                      threshold: 50.0
+                    timestamp: 2024-01-22T14:45:12Z
+                    acknowledged: true
+                    acknowledgedBy: john.doe@example.com
+                    acknowledgedAt: 2024-01-22T14:50:00Z
+                    createdAt: 2024-01-22T14:45:12Z
+                pageable:
+                  pageNumber: 0
+                  pageSize: 20
+                totalElements: 156
+                totalPages: 8
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/events/{id}:
+    get:
+      tags:
+        - Events
+      summary: Get event by ID
+      description: Retrieve a specific event by its unique identifier
+      operationId: getEventById
+      parameters:
+        - name: id
+          in: path
+          description: Event unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDTO'
+              example:
+                id: 523e4567-e89b-12d3-a456-426614174000
+                farmId: 223e4567-e89b-12d3-a456-426614174000
+                equipmentId: 323e4567-e89b-12d3-a456-426614174000
+                equipmentName: Main Irrigation Pump
+                eventType: STATUS_CHANGE
+                severity: INFO
+                message: Pump status changed from IDLE to OPERATIONAL
+                metadata:
+                  previousStatus: IDLE
+                  newStatus: OPERATIONAL
+                  flowRate: 120.5
+                timestamp: 2024-01-22T10:15:30Z
+                acknowledged: false
+                acknowledgedBy: null
+                acknowledgedAt: null
+                createdAt: 2024-01-22T10:15:30Z
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/events/unacknowledged:
+    get:
+      tags:
+        - Events
+      summary: Get unacknowledged critical events
+      description: Retrieve all unacknowledged critical events that require immediate attention
+      operationId: getUnacknowledgedCriticalEvents
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Unacknowledged critical events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageEventDTO'
+              example:
+                content:
+                  - id: 523e4567-e89b-12d3-a456-426614174002
+                    farmId: 223e4567-e89b-12d3-a456-426614174000
+                    equipmentId: 323e4567-e89b-12d3-a456-426614174000
+                    equipmentName: Main Irrigation Pump
+                    eventType: ALERT
+                    severity: CRITICAL
+                    message: Pump offline - no communication for 15 minutes
+                    timestamp: 2024-01-22T15:30:00Z
+                    acknowledged: false
+                  - id: 523e4567-e89b-12d3-a456-426614174003
+                    farmId: 223e4567-e89b-12d3-a456-426614174000
+                    equipmentId: 423e4567-e89b-12d3-a456-426614174000
+                    equipmentName: Temperature Sensor A1
+                    eventType: ALERT
+                    severity: CRITICAL
+                    message: Temperature reading outside safe range
+                    timestamp: 2024-01-22T16:15:45Z
+                    acknowledged: false
+                totalElements: 5
+                totalPages: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/events/farm/{farmId}:
+    get:
+      tags:
+        - Events
+      summary: Get events by farm
+      description: Retrieve all events for a specific farm
+      operationId: getEventsByFarmId
+      parameters:
+        - name: farmId
+          in: path
+          description: Farm unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageEventDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/events/equipment/{equipmentId}:
+    get:
+      tags:
+        - Events
+      summary: Get events by equipment
+      description: Retrieve all events for a specific piece of equipment
+      operationId: getEventsByEquipmentId
+      parameters:
+        - name: equipmentId
+          in: path
+          description: Equipment unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageEventDTO'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/events/{id}/acknowledge:
+    post:
+      tags:
+        - Events
+      summary: Acknowledge event
+      description: Mark an event as acknowledged by a user
+      operationId: acknowledgeEvent
+      parameters:
+        - name: id
+          in: path
+          description: Event unique identifier (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcknowledgeEventRequest'
+            example:
+              acknowledgedBy: john.doe@example.com
+              notes: Investigated the issue - pump was manually shut off for field inspection
+      responses:
+        '200':
+          description: Event acknowledged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDTO'
+              example:
+                id: 523e4567-e89b-12d3-a456-426614174000
+                farmId: 223e4567-e89b-12d3-a456-426614174000
+                equipmentId: 323e4567-e89b-12d3-a456-426614174000
+                equipmentName: Main Irrigation Pump
+                eventType: ALERT
+                severity: CRITICAL
+                message: Pump offline - no communication for 15 minutes
+                timestamp: 2024-01-22T15:30:00Z
+                acknowledged: true
+                acknowledgedBy: john.doe@example.com
+                acknowledgedAt: 2024-01-22T15:45:00Z
+                notes: Investigated the issue - pump was manually shut off for field inspection
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+  /api/statistics/dashboard:
+    get:
+      tags:
+        - Statistics
+      summary: Get dashboard statistics
+      description: |
+        Retrieve comprehensive dashboard statistics including:
+        - Total event counts
+        - Event breakdown by severity
+        - Event breakdown by type
+        - Recent critical events
+        - Equipment health metrics
+        - Event trends over time
+      operationId: getDashboardStatistics
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatisticsDTO'
+              example:
+                totalEvents: 1542
+                totalCriticalEvents: 23
+                unacknowledgedCriticalEvents: 5
+                eventsBySeverity:
+                  INFO: 1245
+                  WARNING: 274
+                  CRITICAL: 21
+                  EMERGENCY: 2
+                eventsByType:
+                  STATUS_CHANGE: 856
+                  ALERT: 312
+                  MAINTENANCE_DUE: 145
+                  TELEMETRY_ANOMALY: 189
+                  OFFLINE: 28
+                  ERROR: 12
+                recentCriticalEvents:
+                  - id: 523e4567-e89b-12d3-a456-426614174002
+                    equipmentName: Main Irrigation Pump
+                    eventType: ALERT
+                    severity: CRITICAL
+                    message: Pump offline - no communication for 15 minutes
+                    timestamp: 2024-01-22T15:30:00Z
+                    acknowledged: false
+                  - id: 523e4567-e89b-12d3-a456-426614174003
+                    equipmentName: Temperature Sensor A1
+                    eventType: ALERT
+                    severity: CRITICAL
+                    message: Temperature reading outside safe range
+                    timestamp: 2024-01-22T16:15:45Z
+                    acknowledged: false
+                equipmentHealthMetrics:
+                  totalEquipment: 45
+                  operational: 38
+                  faulty: 4
+                  offline: 3
+                eventTrends:
+                  last24Hours: 87
+                  last7Days: 456
+                  last30Days: 1542
+                averageResponseTime: 14.5
+                generatedAt: 2024-01-22T17:00:00Z
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from authentication service
+
+  schemas:
+    EventDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique event identifier
+        farmId:
+          type: string
+          format: uuid
+          description: Farm where the equipment is located
+        equipmentId:
+          type: string
+          format: uuid
+          description: Equipment that generated the event
+        equipmentName:
+          type: string
+          description: Name of the equipment
+        eventType:
+          type: string
+          enum: [STATUS_CHANGE, ALERT, MAINTENANCE_DUE, TELEMETRY_ANOMALY, OFFLINE, ERROR]
+          description: Type of event
+        severity:
+          type: string
+          enum: [INFO, WARNING, CRITICAL, EMERGENCY]
+          description: Severity level of the event
+        message:
+          type: string
+          description: Human-readable event message
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional event-specific data
+        timestamp:
+          type: string
+          format: date-time
+          description: When the event occurred
+        acknowledged:
+          type: boolean
+          description: Whether the event has been acknowledged
+        acknowledgedBy:
+          type: string
+          nullable: true
+          description: Email of user who acknowledged the event
+        acknowledgedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the event was acknowledged
+        notes:
+          type: string
+          nullable: true
+          description: Notes added when acknowledging the event
+        createdAt:
+          type: string
+          format: date-time
+          description: When the event was created in the system
+
+    AcknowledgeEventRequest:
+      type: object
+      required:
+        - acknowledgedBy
+      properties:
+        acknowledgedBy:
+          type: string
+          format: email
+          description: Email of the user acknowledging the event
+        notes:
+          type: string
+          maxLength: 1000
+          description: Optional notes about the event acknowledgment
+
+    DashboardStatisticsDTO:
+      type: object
+      properties:
+        totalEvents:
+          type: integer
+          format: int64
+          description: Total number of events in the system
+        totalCriticalEvents:
+          type: integer
+          format: int64
+          description: Total number of critical and emergency events
+        unacknowledgedCriticalEvents:
+          type: integer
+          format: int64
+          description: Number of unacknowledged critical events
+        eventsBySeverity:
+          type: object
+          description: Event count grouped by severity level
+          additionalProperties:
+            type: integer
+            format: int64
+        eventsByType:
+          type: object
+          description: Event count grouped by event type
+          additionalProperties:
+            type: integer
+            format: int64
+        recentCriticalEvents:
+          type: array
+          description: List of recent critical events (last 10)
+          items:
+            $ref: '#/components/schemas/EventDTO'
+        equipmentHealthMetrics:
+          type: object
+          description: Overall equipment health statistics
+          properties:
+            totalEquipment:
+              type: integer
+            operational:
+              type: integer
+            faulty:
+              type: integer
+            offline:
+              type: integer
+        eventTrends:
+          type: object
+          description: Event count trends over different time periods
+          properties:
+            last24Hours:
+              type: integer
+            last7Days:
+              type: integer
+            last30Days:
+              type: integer
+        averageResponseTime:
+          type: number
+          format: double
+          description: Average time to acknowledge critical events (in minutes)
+        generatedAt:
+          type: string
+          format: date-time
+          description: When these statistics were generated
+
+    PageEventDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventDTO'
+        pageable:
+          $ref: '#/components/schemas/PageableObject'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        last:
+          type: boolean
+        first:
+          type: boolean
+        numberOfElements:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+
+    PageableObject:
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        sort:
+          type: object
+          properties:
+            sorted:
+              type: boolean
+            unsorted:
+              type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+
+  responses:
+    BadRequestError:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-22T15:45:00Z
+            status: 400
+            error: Bad Request
+            message: Validation failed - acknowledgedBy must be a valid email address
+            path: /api/events/523e4567-e89b-12d3-a456-426614174000/acknowledge
+
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-22T15:45:00Z
+            status: 401
+            error: Unauthorized
+            message: JWT token is missing or invalid
+            path: /api/events
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-22T15:45:00Z
+            status: 404
+            error: Not Found
+            message: Event with ID 523e4567-e89b-12d3-a456-426614174000 not found
+            path: /api/events/523e4567-e89b-12d3-a456-426614174000
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: 2024-01-22T15:45:00Z
+            status: 500
+            error: Internal Server Error
+            message: An unexpected error occurred
+            path: /api/events

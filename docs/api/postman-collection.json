@@ -1,0 +1,1024 @@
+{
+  "info": {
+    "_postman_id": "farm-monitoring-api-collection",
+    "name": "Farm Equipment Monitoring API",
+    "description": "Comprehensive API collection for Farm Equipment Monitoring Application including all microservices: Farmers, Equipment, and Supervision.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    },
+    {
+      "key": "farmer_id",
+      "value": "123e4567-e89b-12d3-a456-426614174000",
+      "type": "string"
+    },
+    {
+      "key": "farm_id",
+      "value": "223e4567-e89b-12d3-a456-426614174000",
+      "type": "string"
+    },
+    {
+      "key": "pump_id",
+      "value": "323e4567-e89b-12d3-a456-426614174000",
+      "type": "string"
+    },
+    {
+      "key": "sensor_id",
+      "value": "423e4567-e89b-12d3-a456-426614174000",
+      "type": "string"
+    },
+    {
+      "key": "event_id",
+      "value": "523e4567-e89b-12d3-a456-426614174000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Farmers Service",
+      "item": [
+        {
+          "name": "Farmers",
+          "item": [
+            {
+              "name": "Create Farmer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1-555-0123\",\n  \"role\": \"OWNER\",\n  \"region\": \"North Region\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/farmers",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers"]
+                },
+                "description": "Create a new farmer in the system"
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Farmers",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers?page=0&size=20&sort=name",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "name"
+                    }
+                  ]
+                },
+                "description": "Retrieve all farmers with pagination"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Farmer by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/{{farmer_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "{{farmer_id}}"]
+                },
+                "description": "Retrieve a specific farmer by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Farmer by Email",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/email/john.doe@example.com",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "email", "john.doe@example.com"]
+                },
+                "description": "Retrieve a farmer by email address"
+              },
+              "response": []
+            },
+            {
+              "name": "Search Farmers",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/search?name=John",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "search"],
+                  "query": [
+                    {
+                      "key": "name",
+                      "value": "John"
+                    }
+                  ]
+                },
+                "description": "Search farmers by name"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Farmers by Role",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/role/OWNER",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "role", "OWNER"]
+                },
+                "description": "Get all farmers with OWNER role"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Admin Farmers",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/admins",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "admins"]
+                },
+                "description": "Get farmers with admin privileges"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Recent Farmers",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/recent?days=30",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "recent"],
+                  "query": [
+                    {
+                      "key": "days",
+                      "value": "30"
+                    }
+                  ]
+                },
+                "description": "Get farmers registered in the last 30 days"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Farmer",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1-555-9999\",\n  \"role\": \"MANAGER\",\n  \"region\": \"East Region\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/{{farmer_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "{{farmer_id}}"]
+                },
+                "description": "Update farmer information"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Farmer",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/{{farmer_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "{{farmer_id}}"]
+                },
+                "description": "Delete a farmer from the system"
+              },
+              "response": []
+            },
+            {
+              "name": "Check Farmer Exists",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/{{farmer_id}}/exists",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "{{farmer_id}}", "exists"]
+                },
+                "description": "Check if farmer exists by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Check Email Exists",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farmers/email/john.doe@example.com/exists",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farmers", "email", "john.doe@example.com", "exists"]
+                },
+                "description": "Check if email already exists"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Farms",
+          "item": [
+            {
+              "name": "Create Farm",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Green Valley Farm\",\n  \"location\": \"North Region, Sector 5\",\n  \"area\": 150.5,\n  \"farmerId\": \"{{farmer_id}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/farms",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms"]
+                },
+                "description": "Create a new farm"
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Farms",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farms?page=0&size=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    }
+                  ]
+                },
+                "description": "Retrieve all farms with pagination"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Farm by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farms/{{farm_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms", "{{farm_id}}"]
+                },
+                "description": "Retrieve a specific farm by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Farms by Farmer",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farms/farmer/{{farmer_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms", "farmer", "{{farmer_id}}"]
+                },
+                "description": "Get all farms belonging to a farmer"
+              },
+              "response": []
+            },
+            {
+              "name": "Search Farms",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farms/search?searchTerm=Valley",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms", "search"],
+                  "query": [
+                    {
+                      "key": "searchTerm",
+                      "value": "Valley"
+                    }
+                  ]
+                },
+                "description": "Search farms by name or location"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Farms by Area Range",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farms/area-range?minArea=50&maxArea=200",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms", "area-range"],
+                  "query": [
+                    {
+                      "key": "minArea",
+                      "value": "50"
+                    },
+                    {
+                      "key": "maxArea",
+                      "value": "200"
+                    }
+                  ]
+                },
+                "description": "Get farms within a specified area range"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Large Farms",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farms/large",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms", "large"]
+                },
+                "description": "Get farms with area >= 100 hectares"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Farm",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Green Valley Farm Updated\",\n  \"location\": \"North Region, Sector 5A\",\n  \"area\": 175.0\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/farms/{{farm_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms", "{{farm_id}}"]
+                },
+                "description": "Update farm information"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Farm",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/farms/{{farm_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "farms", "{{farm_id}}"]
+                },
+                "description": "Delete a farm"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Equipment Service",
+      "item": [
+        {
+          "name": "Pumps",
+          "item": [
+            {
+              "name": "Create Pump",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"farmId\": \"{{farm_id}}\",\n  \"name\": \"Main Irrigation Pump\",\n  \"model\": \"AquaPump Pro 3000\",\n  \"serialNumber\": \"AP3000-2024-001\",\n  \"installationDate\": \"2024-01-20\",\n  \"flowRateMax\": 150.5\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/pumps",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps"]
+                },
+                "description": "Create a new pump for a farm"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Pump by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/{{pump_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "{{pump_id}}"]
+                },
+                "description": "Retrieve a specific pump by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Pumps by Farm",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/farm/{{farm_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "farm", "{{farm_id}}"]
+                },
+                "description": "Get all pumps for a farm"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Pumps by Status",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/farm/{{farm_id}}/status/OPERATIONAL",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "farm", "{{farm_id}}", "status", "OPERATIONAL"]
+                },
+                "description": "Get pumps filtered by status"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Operational Pumps",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/farm/{{farm_id}}/operational",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "farm", "{{farm_id}}", "operational"]
+                },
+                "description": "Get all operational pumps"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Pumps with Overdue Maintenance",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/farm/{{farm_id}}/maintenance-overdue",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "farm", "{{farm_id}}", "maintenance-overdue"]
+                },
+                "description": "Get pumps with overdue maintenance"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Pump",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Main Irrigation Pump - Updated\",\n  \"status\": \"OPERATIONAL\",\n  \"currentFlowRate\": 120.5\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/{{pump_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "{{pump_id}}"]
+                },
+                "description": "Update pump information"
+              },
+              "response": []
+            },
+            {
+              "name": "Schedule Maintenance",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"scheduledDate\": \"2024-07-20T09:00:00Z\",\n  \"description\": \"Regular 6-month maintenance check\",\n  \"estimatedDuration\": 4\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/{{pump_id}}/maintenance/schedule",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "{{pump_id}}", "maintenance", "schedule"]
+                },
+                "description": "Schedule maintenance for a pump"
+              },
+              "response": []
+            },
+            {
+              "name": "Complete Maintenance",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/{{pump_id}}/maintenance/complete?notes=Maintenance completed successfully",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "{{pump_id}}", "maintenance", "complete"],
+                  "query": [
+                    {
+                      "key": "notes",
+                      "value": "Maintenance completed successfully"
+                    }
+                  ]
+                },
+                "description": "Mark maintenance as completed"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Pump",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/pumps/{{pump_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "pumps", "{{pump_id}}"]
+                },
+                "description": "Delete a pump"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Sensors",
+          "item": [
+            {
+              "name": "Create Sensor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"farmId\": \"{{farm_id}}\",\n  \"name\": \"Soil Moisture Sensor Zone A\",\n  \"type\": \"SOIL_MOISTURE\",\n  \"manufacturer\": \"SensorTech Inc.\",\n  \"model\": \"SMT-500\",\n  \"serialNumber\": \"SMT500-2024-042\",\n  \"installationDate\": \"2024-01-22\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/sensors",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors"]
+                },
+                "description": "Create a new sensor"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Sensor by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/{{sensor_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "{{sensor_id}}"]
+                },
+                "description": "Retrieve a specific sensor by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Sensors by Farm",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/farm/{{farm_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "farm", "{{farm_id}}"]
+                },
+                "description": "Get all sensors for a farm"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Sensors by Type",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/farm/{{farm_id}}/type/SOIL_MOISTURE",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "farm", "{{farm_id}}", "type", "SOIL_MOISTURE"]
+                },
+                "description": "Get sensors filtered by type"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Active Sensors",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/farm/{{farm_id}}/active",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "farm", "{{farm_id}}", "active"]
+                },
+                "description": "Get all active sensors"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Sensors with Low Battery",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/farm/{{farm_id}}/low-battery",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "farm", "{{farm_id}}", "low-battery"]
+                },
+                "description": "Get sensors with battery below 20%"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Offline Sensors",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/farm/{{farm_id}}/offline",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "farm", "{{farm_id}}", "offline"]
+                },
+                "description": "Get sensors that haven't communicated in 30 minutes"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Sensor",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Soil Moisture Sensor Zone A - Updated\",\n  \"status\": \"ACTIVE\",\n  \"batteryLevel\": 85,\n  \"currentValue\": 65.3\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/{{sensor_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "{{sensor_id}}"]
+                },
+                "description": "Update sensor information"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Sensor",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "X-Farmer-Id",
+                    "value": "{{farmer_id}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/sensors/{{sensor_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "sensors", "{{sensor_id}}"]
+                },
+                "description": "Delete a sensor"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Supervision Service",
+      "item": [
+        {
+          "name": "Events",
+          "item": [
+            {
+              "name": "Get All Events",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/events?page=0&size=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "20"
+                    },
+                    {
+                      "key": "farmId",
+                      "value": "{{farm_id}}",
+                      "disabled": true
+                    },
+                    {
+                      "key": "equipmentId",
+                      "value": "{{pump_id}}",
+                      "disabled": true
+                    },
+                    {
+                      "key": "eventType",
+                      "value": "ALERT",
+                      "disabled": true
+                    },
+                    {
+                      "key": "severity",
+                      "value": "CRITICAL",
+                      "disabled": true
+                    },
+                    {
+                      "key": "acknowledged",
+                      "value": "false",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Retrieve all events with optional filtering"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Event by ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/events/{{event_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "{{event_id}}"]
+                },
+                "description": "Retrieve a specific event by ID"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Unacknowledged Critical Events",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/events/unacknowledged",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "unacknowledged"]
+                },
+                "description": "Get all unacknowledged critical events"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Events by Farm",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/events/farm/{{farm_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "farm", "{{farm_id}}"]
+                },
+                "description": "Get all events for a specific farm"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Events by Equipment",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/events/equipment/{{pump_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "equipment", "{{pump_id}}"]
+                },
+                "description": "Get all events for a specific equipment"
+              },
+              "response": []
+            },
+            {
+              "name": "Acknowledge Event",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"acknowledgedBy\": \"john.doe@example.com\",\n  \"notes\": \"Investigated the issue - pump was manually shut off for field inspection\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/events/{{event_id}}/acknowledge",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "events", "{{event_id}}", "acknowledge"]
+                },
+                "description": "Acknowledge an event"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Statistics",
+          "item": [
+            {
+              "name": "Get Dashboard Statistics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/statistics/dashboard",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "statistics", "dashboard"]
+                },
+                "description": "Get comprehensive dashboard statistics"
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
