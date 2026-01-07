@@ -146,12 +146,42 @@ The application will be accessible at:
 
 ### Running with Docker Compose (Full Stack)
 
-```bash
-cd docker
-docker-compose up --build
+The easiest way to run the entire application stack is using Docker Compose.
+
+**Quick Start:**
+
+**Windows:**
+```powershell
+.\build.bat  # Build all Docker images
+.\run.bat    # Start all services
 ```
 
-This will start all services in containers with proper networking and dependencies.
+**Linux/macOS:**
+```bash
+chmod +x build.sh run.sh
+./build.sh   # Build all Docker images
+./run.sh     # Start all services
+```
+
+**Manual Docker Compose:**
+```bash
+# Build and start all services
+docker-compose up --build -d
+
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose down
+```
+
+**Access Points:**
+- **Frontend**: http://localhost:3000
+- **API Gateway**: http://localhost:8080
+- **Eureka Dashboard**: http://localhost:8761
+- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
+
+For comprehensive Docker documentation, see [DOCKER_README.md](./DOCKER_README.md).
 
 ### Deploying to Kubernetes
 
