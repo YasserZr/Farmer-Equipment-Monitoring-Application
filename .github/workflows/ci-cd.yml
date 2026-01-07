@@ -1,0 +1,272 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  JAVA_VERSION: '17'
+  NODE_VERSION: '18'
+  
+jobs:
+  # Backend Tests
+  backend-tests:
+    name: Backend Tests - ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - eureka-server
+          - config-server
+          - api-gateway
+          - farmers-service
+          - equipment-service
+          - supervision-service
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Run tests for ${{ matrix.service }}
+        working-directory: backend/${{ matrix.service }}
+        run: |
+          mvn clean test \
+            -Dspring.profiles.active=test \
+            --batch-mode \
+            --fail-at-end
+
+      - name: Generate test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Report - ${{ matrix.service }}
+          path: backend/${{ matrix.service }}/target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Upload test coverage
+        if: matrix.service == 'farmers-service' || matrix.service == 'equipment-service'
+        uses: codecov/codecov-action@v3
+        with:
+          files: backend/${{ matrix.service }}/target/site/jacoco/jacoco.xml
+          flags: ${{ matrix.service }}
+          name: ${{ matrix.service }}-coverage
+
+  # Frontend Tests
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Run type check
+        working-directory: frontend
+        run: npm run type-check
+
+      - name: Run unit tests
+        working-directory: frontend
+        run: npm run test:unit
+
+      - name: Run integration tests
+        working-directory: frontend
+        run: npm run test:integration
+
+      - name: Generate coverage report
+        working-directory: frontend
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      rabbitmq:
+        image: rabbitmq:3.12-alpine
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Run integration tests
+        working-directory: backend/farmers-service
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: test
+          SPRING_RABBITMQ_HOST: localhost
+          SPRING_RABBITMQ_PORT: 5672
+        run: mvn verify -Pintegration-tests
+
+  # Build and Push Docker Images
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push backend images
+        run: |
+          services="eureka-server config-server api-gateway farmers-service equipment-service supervision-service"
+          for service in $services; do
+            docker build \
+              -t ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-$service:latest \
+              -t ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-$service:${{ github.sha }} \
+              -f backend/$service/Dockerfile \
+              backend/$service
+            docker push ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-$service:latest
+            docker push ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-$service:${{ github.sha }}
+          done
+
+      - name: Build and push frontend image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-frontend:latest \
+            -t ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-frontend:${{ github.sha }} \
+            frontend/
+          docker push ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/farm-monitoring-frontend:${{ github.sha }}
+
+  # Security Scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Deploy to Kubernetes
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: [build-images, integration-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Update image tags in kustomization
+        working-directory: kubernetes
+        run: |
+          cd kubernetes
+          kustomize edit set image \
+            farm-monitoring-eureka-server=${{ secrets.DOCKER_USERNAME }}/farm-monitoring-eureka-server:${{ github.sha }} \
+            farm-monitoring-config-server=${{ secrets.DOCKER_USERNAME }}/farm-monitoring-config-server:${{ github.sha }} \
+            farm-monitoring-api-gateway=${{ secrets.DOCKER_USERNAME }}/farm-monitoring-api-gateway:${{ github.sha }} \
+            farm-monitoring-farmers-service=${{ secrets.DOCKER_USERNAME }}/farm-monitoring-farmers-service:${{ github.sha }} \
+            farm-monitoring-equipment-service=${{ secrets.DOCKER_USERNAME }}/farm-monitoring-equipment-service:${{ github.sha }} \
+            farm-monitoring-supervision-service=${{ secrets.DOCKER_USERNAME }}/farm-monitoring-supervision-service:${{ github.sha }} \
+            farm-monitoring-frontend=${{ secrets.DOCKER_USERNAME }}/farm-monitoring-frontend:${{ github.sha }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -k kubernetes/
+          kubectl rollout status deployment -n farm-monitoring
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n farm-monitoring
+          kubectl get svc -n farm-monitoring

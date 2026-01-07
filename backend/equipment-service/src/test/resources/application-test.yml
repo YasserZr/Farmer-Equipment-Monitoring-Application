@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:15-alpine:///testdb
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  cloud:
+    config:
+      enabled: false
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+eureka:
+  client:
+    enabled: false
+    
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
