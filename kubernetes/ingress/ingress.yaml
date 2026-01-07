@@ -1,0 +1,77 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: farm-monitoring-ingress
+  namespace: farm-monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - farm-monitoring.example.com
+    - api.farm-monitoring.example.com
+    secretName: farm-monitoring-tls
+  rules:
+  - host: farm-monitoring.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
+  - host: api.farm-monitoring.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: farm-monitoring-admin-ingress
+  namespace: farm-monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Admin Area'
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - admin.farm-monitoring.example.com
+    secretName: farm-monitoring-tls
+  rules:
+  - host: admin.farm-monitoring.example.com
+    http:
+      paths:
+      - path: /eureka
+        pathType: Prefix
+        backend:
+          service:
+            name: eureka-server
+            port:
+              number: 8761
+      - path: /rabbitmq
+        pathType: Prefix
+        backend:
+          service:
+            name: rabbitmq
+            port:
+              number: 15672

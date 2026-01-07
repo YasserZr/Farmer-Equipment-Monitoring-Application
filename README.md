@@ -185,18 +185,56 @@ For comprehensive Docker documentation, see [DOCKER_README.md](./DOCKER_README.m
 
 ### Deploying to Kubernetes
 
-```bash
-# Apply all manifests
-kubectl apply -f kubernetes/configmaps/
-kubectl apply -f kubernetes/deployments/
-kubectl apply -f kubernetes/services/
+**Automated Deployment:**
 
-# Check deployment status
-kubectl get pods
-kubectl get services
+**Windows:**
+```powershell
+cd kubernetes
+.\deploy.bat
 ```
 
-For production deployments, refer to [docs/architecture.md](./docs/architecture.md) for detailed Kubernetes configuration guidance.
+**Linux/macOS:**
+```bash
+cd kubernetes
+chmod +x deploy.sh
+./deploy.sh
+```
+
+**Manual Deployment:**
+```bash
+cd kubernetes
+
+# Deploy all resources
+kubectl apply -k .
+
+# Or step by step
+kubectl apply -f namespace.yaml
+kubectl apply -f configmaps/
+kubectl apply -f secrets/
+kubectl apply -f databases/
+kubectl apply -f rabbitmq/
+kubectl apply -f eureka-server/
+kubectl apply -f config-server/
+kubectl apply -f api-gateway/
+kubectl apply -f farmers-service/
+kubectl apply -f equipment-service/
+kubectl apply -f supervision-service/
+kubectl apply -f frontend/
+kubectl apply -f ingress/
+
+# Check deployment status
+kubectl get pods -n farm-monitoring
+kubectl get svc -n farm-monitoring
+```
+
+**Access the Application:**
+```bash
+# Port forwarding for local access
+kubectl port-forward -n farm-monitoring svc/frontend 3000:3000
+kubectl port-forward -n farm-monitoring svc/api-gateway 8080:8080
+```
+
+For comprehensive Kubernetes documentation, see [kubernetes/KUBERNETES_README.md](./kubernetes/KUBERNETES_README.md).
 
 ## 🔧 Configuration
 

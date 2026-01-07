@@ -1,0 +1,57 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: farm-monitoring
+
+resources:
+  # Namespace
+  - namespace.yaml
+  
+  # ConfigMaps and Secrets
+  - configmaps/application-config.yaml
+  - secrets/database-secrets.yaml
+  - secrets/rabbitmq-secrets.yaml
+  
+  # Databases
+  - databases/farmers-db-statefulset.yaml
+  - databases/equipment-db-statefulset.yaml
+  - databases/supervision-db-statefulset.yaml
+  
+  # RabbitMQ
+  - rabbitmq/rabbitmq-deployment.yaml
+  
+  # Infrastructure Services
+  - eureka-server/deployment.yaml
+  - config-server/deployment.yaml
+  - api-gateway/deployment.yaml
+  
+  # Business Services
+  - farmers-service/deployment.yaml
+  - equipment-service/deployment.yaml
+  - supervision-service/deployment.yaml
+  
+  # Frontend
+  - frontend/deployment.yaml
+  
+  # Ingress
+  - ingress/ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: farm-monitoring
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+  - name: farm-monitoring/eureka-server
+    newTag: latest
+  - name: farm-monitoring/config-server
+    newTag: latest
+  - name: farm-monitoring/api-gateway
+    newTag: latest
+  - name: farm-monitoring/farmers-service
+    newTag: latest
+  - name: farm-monitoring/equipment-service
+    newTag: latest
+  - name: farm-monitoring/supervision-service
+    newTag: latest
+  - name: farm-monitoring/frontend
+    newTag: latest

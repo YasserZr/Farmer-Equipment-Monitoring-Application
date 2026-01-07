@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: application-config
+  namespace: farm-monitoring
+data:
+  # Eureka Configuration
+  EUREKA_SERVER_URL: "http://eureka-server:8761/eureka/"
+  
+  # Config Server Configuration
+  CONFIG_SERVER_URL: "http://config-server:8888"
+  
+  # RabbitMQ Configuration
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  
+  # Database Hosts
+  FARMERS_DB_HOST: "farmers-db"
+  FARMERS_DB_PORT: "5432"
+  FARMERS_DB_NAME: "farmers_db"
+  
+  EQUIPMENT_DB_HOST: "equipment-db"
+  EQUIPMENT_DB_PORT: "5432"
+  EQUIPMENT_DB_NAME: "equipment_db"
+  
+  SUPERVISION_DB_HOST: "supervision-db"
+  SUPERVISION_DB_PORT: "5432"
+  SUPERVISION_DB_NAME: "supervision_db"
+  
+  # Spring Profiles
+  SPRING_PROFILES_ACTIVE: "kubernetes"
+  
+  # API Gateway Configuration
+  API_GATEWAY_URL: "http://api-gateway:8080"
+  
+  # Frontend Configuration
+  NEXT_PUBLIC_API_URL: "http://api-gateway:8080"
