@@ -1,0 +1,188 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "jvm-metrics-dashboard",
+    "title": "JVM Metrics - Detailed",
+    "tags": ["jvm", "spring-boot", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "type": "graph",
+        "title": "JVM Memory Usage (Heap)",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{area=\"heap\",service=\"$service\"}",
+            "legendFormat": "{{id}} - used",
+            "refId": "A"
+          },
+          {
+            "expr": "jvm_memory_committed_bytes{area=\"heap\",service=\"$service\"}",
+            "legendFormat": "{{id}} - committed",
+            "refId": "B"
+          },
+          {
+            "expr": "jvm_memory_max_bytes{area=\"heap\",service=\"$service\"}",
+            "legendFormat": "{{id}} - max",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "bytes"},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "values": true, "current": true, "alignAsTable": true}
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "type": "graph",
+        "title": "JVM Memory Usage (Non-Heap)",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{area=\"nonheap\",service=\"$service\"}",
+            "legendFormat": "{{id}} - used",
+            "refId": "A"
+          },
+          {
+            "expr": "jvm_memory_committed_bytes{area=\"nonheap\",service=\"$service\"}",
+            "legendFormat": "{{id}} - committed",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "bytes"},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "values": true, "current": true, "alignAsTable": true}
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "type": "graph",
+        "title": "GC Pause Duration",
+        "targets": [
+          {
+            "expr": "rate(jvm_gc_pause_seconds_sum{service=\"$service\"}[5m]) / rate(jvm_gc_pause_seconds_count{service=\"$service\"}[5m])",
+            "legendFormat": "{{action}}/{{cause}} - avg duration",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "s"},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "values": true, "current": true, "alignAsTable": true}
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "type": "graph",
+        "title": "GC Rate",
+        "targets": [
+          {
+            "expr": "rate(jvm_gc_pause_seconds_count{service=\"$service\"}[5m])",
+            "legendFormat": "{{action}}/{{cause}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops"},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "values": true, "current": true, "alignAsTable": true}
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16},
+        "type": "graph",
+        "title": "Thread States",
+        "targets": [
+          {
+            "expr": "jvm_threads_states_threads{service=\"$service\"}",
+            "legendFormat": "{{state}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short"},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "values": true, "current": true, "alignAsTable": true}
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16},
+        "type": "graph",
+        "title": "Class Loading",
+        "targets": [
+          {
+            "expr": "jvm_classes_loaded_classes{service=\"$service\"}",
+            "legendFormat": "Loaded",
+            "refId": "A"
+          },
+          {
+            "expr": "jvm_classes_unloaded_classes_total{service=\"$service\"}",
+            "legendFormat": "Unloaded",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "short"},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "values": true, "current": true, "alignAsTable": true}
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 16},
+        "type": "graph",
+        "title": "Buffer Pools",
+        "targets": [
+          {
+            "expr": "jvm_buffer_memory_used_bytes{service=\"$service\"}",
+            "legendFormat": "{{id}} - used",
+            "refId": "A"
+          },
+          {
+            "expr": "jvm_buffer_total_capacity_bytes{service=\"$service\"}",
+            "legendFormat": "{{id}} - capacity",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "bytes"},
+          {"format": "short"}
+        ],
+        "legend": {"show": true, "values": true, "current": true, "alignAsTable": true}
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "query": "prometheus"
+        },
+        {
+          "name": "service",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(jvm_memory_used_bytes, service)",
+          "multi": false,
+          "includeAll": false
+        }
+      ]
+    }
+  },
+  "folderId": 0,
+  "overwrite": true
+}

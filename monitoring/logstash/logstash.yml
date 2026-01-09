@@ -1,0 +1,10 @@
+input {
+  logstash: http://logstash:5000
+}
+
+output {
+  default:
+    hosts:
+      - http://elasticsearch:9200
+    username: elastic
+    password: changeme

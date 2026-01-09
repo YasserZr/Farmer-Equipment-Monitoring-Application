@@ -1,0 +1,17 @@
+# Elasticsearch Configuration for Farm Monitoring
+
+cluster.name: "farm-monitoring-cluster"
+network.host: 0.0.0.0
+
+# Discovery Settings
+discovery.type: single-node
+
+# Security Settings
+xpack.security.enabled: false
+xpack.security.enrollment.enabled: false
+
+# Monitoring
+xpack.monitoring.collection.enabled: true
+
+# License
+xpack.license.self_generated.type: basic

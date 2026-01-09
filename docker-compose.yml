@@ -170,6 +170,9 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    volumes:
+      - ./logs/farmers-service:/logs
     depends_on:
       farmers-db:
         condition: service_healthy
@@ -207,6 +210,9 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    volumes:
+      - ./logs/equipment-service:/logs
     depends_on:
       equipment-db:
         condition: service_healthy
@@ -244,6 +250,9 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+    volumes:
+      - ./logs/supervision-service:/logs
     depends_on:
       supervision-db:
         condition: service_healthy
