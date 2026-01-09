@@ -59,9 +59,9 @@ export default function ReportsPage() {
 
   // Battery Status Distribution
   const batteryDistribution = [
-    { name: 'Good (>50%)', value: sensors.filter(s => s.batteryLevel > 50).length },
-    { name: 'Low (20-50%)', value: sensors.filter(s => s.batteryLevel >= 20 && s.batteryLevel <= 50).length },
-    { name: 'Critical (<20%)', value: sensors.filter(s => s.batteryLevel < 20).length },
+    { name: 'Good (>50%)', value: sensors.filter(s => s.battery > 50).length },
+    { name: 'Low (20-50%)', value: sensors.filter(s => s.battery >= 20 && s.battery <= 50).length },
+    { name: 'Critical (<20%)', value: sensors.filter(s => s.battery < 20).length },
   ];
 
   // Maintenance Trends (Mock data - replace with actual API data)

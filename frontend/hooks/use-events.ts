@@ -85,10 +85,10 @@ export function useFilterEvents(filter: EventFilterRequest, page = 0, size = 20)
   return useQuery<PaginatedResponse<EquipmentEvent>>({
     queryKey: [EVENTS_KEY, 'filter', filter, page, size],
     queryFn: () =>
-      apiClient.post<PaginatedResponse<EquipmentEvent>, EventFilterRequest>(
+      apiClient.post<PaginatedResponse<EquipmentEvent>>(
         `/api/events/filter?page=${page}&size=${size}`,
         filter
-      ),
+      ).then(response => response.data),
     enabled: Object.keys(filter).length > 0,
   });
 }

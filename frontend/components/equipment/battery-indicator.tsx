@@ -50,7 +50,7 @@ export function BatteryIndicator({
     <div className="flex items-center gap-2">
       {showIcon && <Icon className={cn(sizeClasses[size], getColor())} />}
       <div className="flex-1 min-w-[60px]">
-        <Progress value={level} className="h-2" indicatorClassName={getProgressColor()} />
+        <Progress value={level} className="h-2" />
       </div>
       {showPercentage && (
         <span className={cn('text-sm font-medium', getColor())}>{level}%</span>

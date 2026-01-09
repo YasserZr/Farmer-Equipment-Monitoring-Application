@@ -39,7 +39,7 @@ export default function MaintenancePage() {
         id: '1', // TODO: Get from form
         data: {
           scheduledDate: data.scheduledDate,
-          description: data.description,
+          notes: data.description,
         },
       });
       setMaintenanceDialogOpen(false);

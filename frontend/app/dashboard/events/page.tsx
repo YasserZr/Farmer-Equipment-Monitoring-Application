@@ -14,7 +14,10 @@ export default function EventsPage() {
     try {
       await acknowledgeEvent.mutateAsync({
         id,
-        data: { notes: 'Acknowledged from dashboard' },
+        data: { 
+          acknowledgedBy: 'current-user',
+          notes: 'Acknowledged from dashboard' 
+        },
       });
     } catch (error) {
       // Error handled by hook

@@ -226,7 +226,7 @@ export default function EquipmentPage() {
                           <span className="text-muted-foreground">Battery:</span>
                           <span className="text-xs text-muted-foreground">{sensor.batteryStatus}</span>
                         </div>
-                        <BatteryIndicator level={sensor.batteryLevel} status={sensor.batteryStatus} />
+                        <BatteryIndicator level={sensor.battery} status={sensor.batteryStatus as 'GOOD' | 'LOW' | 'CRITICAL'} />
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Last Communication:</span>

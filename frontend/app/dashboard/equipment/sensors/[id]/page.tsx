@@ -83,13 +83,13 @@ export default function SensorDetailPage({ params }: { params: { id: string } })
             <div className="p-4 border rounded-lg bg-muted/50">
               <h3 className="font-semibold mb-3">Battery Status</h3>
               <BatteryIndicator 
-                level={sensor.batteryLevel} 
-                status={sensor.batteryStatus}
+                level={sensor.battery} 
+                status={sensor.batteryStatus as 'GOOD' | 'LOW' | 'CRITICAL'}
                 size="lg"
               />
               <div className="mt-4 grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-2xl font-bold">{sensor.batteryLevel}%</p>
+                  <p className="text-2xl font-bold">{sensor.battery}%</p>
                   <p className="text-xs text-muted-foreground">Level</p>
                 </div>
                 <div>
@@ -162,7 +162,7 @@ export default function SensorDetailPage({ params }: { params: { id: string } })
                         Critical Battery Level
                       </p>
                       <p className="text-xs text-red-700">
-                        Battery is at {sensor.batteryLevel}%. Immediate replacement required.
+                        Battery is at {sensor.battery}%. Immediate replacement required.
                       </p>
                     </div>
                   )}
@@ -173,7 +173,7 @@ export default function SensorDetailPage({ params }: { params: { id: string } })
                         Low Battery Level
                       </p>
                       <p className="text-xs text-yellow-700">
-                        Battery is at {sensor.batteryLevel}%. Consider replacing soon.
+                        Battery is at {sensor.battery}%. Consider replacing soon.
                       </p>
                     </div>
                   )}
@@ -221,7 +221,7 @@ export default function SensorDetailPage({ params }: { params: { id: string } })
             <Separator />
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Battery</span>
-              <span className="text-sm font-medium">{sensor.batteryLevel}%</span>
+              <span className="text-sm font-medium">{sensor.battery}%</span>
             </div>
             {sensor.alertThreshold && (
               <>

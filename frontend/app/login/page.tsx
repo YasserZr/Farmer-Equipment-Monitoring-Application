@@ -36,7 +36,7 @@ export default function LoginPage() {
       // For now, using mock authentication
       const response = await apiClient.post('/api/auth/login', data);
       
-      const { token, user } = response;
+      const { token, user } = response.data;
       login(user, token);
       
       toast.success('Login successful');

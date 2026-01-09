@@ -56,3 +56,21 @@ export function formatRelativeTime(date: string | Date): string {
   return `${years} year${years !== 1 ? 's' : ''} ago`;
 }
 
+/**
+ * Get initials from a name (e.g., "John Doe" -> "JD")
+ * Can be called with either one full name or separate first and last names
+ */
+export function getInitials(firstNameOrFullName: string, lastName?: string): string {
+  if (lastName) {
+    // Called with separate first and last name
+    return (firstNameOrFullName[0] + lastName[0]).toUpperCase();
+  }
+  // Called with full name
+  return firstNameOrFullName
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+

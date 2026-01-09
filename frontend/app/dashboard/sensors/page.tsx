@@ -57,7 +57,7 @@ export default function SensorsPage() {
       {/* Grid View */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {data?.content.map((sensor) => {
-          const BatteryIcon = getBatteryIcon(sensor.batteryLevel);
+          const BatteryIcon = getBatteryIcon(sensor.battery);
           return (
             <div key={sensor.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between mb-4">
@@ -89,7 +89,7 @@ export default function SensorsPage() {
                   <div className="flex items-center">
                     <BatteryIcon className={`w-4 h-4 mr-1 ${getBatteryColor(sensor.batteryStatus)}`} />
                     <span className={`font-medium ${getBatteryColor(sensor.batteryStatus)}`}>
-                      {sensor.batteryLevel}%
+                      {sensor.battery}%
                     </span>
                   </div>
                 </div>

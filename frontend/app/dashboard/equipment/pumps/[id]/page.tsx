@@ -56,7 +56,7 @@ export default function PumpDetailPage({ params }: { params: { id: string } }) {
         id: params.id,
         data: {
           scheduledDate: data.scheduledDate,
-          description: data.description,
+          notes: data.description,
         },
       });
       setMaintenanceDialogOpen(false);
@@ -266,7 +266,7 @@ export default function PumpDetailPage({ params }: { params: { id: string } }) {
             <Separator />
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Max Flow</span>
-              <span className="text-sm font-medium">{pump.maxFlowRate} L/min</span>
+              <span className="text-sm font-medium">{pump.maxFlow} L/min</span>
             </div>
             {pump.maintenanceOverdue && (
               <>
