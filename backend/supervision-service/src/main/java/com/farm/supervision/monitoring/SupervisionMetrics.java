@@ -3,6 +3,7 @@ package com.farm.supervision.monitoring;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +21,8 @@ public class SupervisionMetrics {
     private final AtomicInteger activeAlertsCount = new AtomicInteger(0);
     private final AtomicInteger unacknowledgedEventsCount = new AtomicInteger(0);
 
-    public SupervisionMetrics(MeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
-        
+    @PostConstruct
+    public void init() {
         // Register gauges
         Gauge.builder("supervision.active_alerts", activeAlertsCount, AtomicInteger::get)
                 .description("Number of active alerts")

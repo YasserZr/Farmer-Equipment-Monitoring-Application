@@ -8,11 +8,14 @@ import com.farm.supervision.repository.EquipmentEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing equipment events.
@@ -63,8 +66,17 @@ public class EventService {
     public Page<EventDTO> getUnacknowledgedCriticalEvents(Pageable pageable) {
         log.debug("Getting unacknowledged critical events");
         
-        return eventRepository.findUnacknowledgedCriticalEvents(pageable)
-                .map(this::convertToDTO);
+        // Repository method returns List, convert to Page
+        List<EquipmentEvent> events = eventRepository.findUnacknowledgedCriticalEvents();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), events.size());
+        List<EquipmentEvent> pageContent = events.subList(start, end);
+        
+        return new PageImpl<>(
+                pageContent.stream().map(this::convertToDTO).collect(Collectors.toList()),
+                pageable,
+                events.size()
+        );
     }
     
     /**
