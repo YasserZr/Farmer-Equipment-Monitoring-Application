@@ -109,7 +109,7 @@ export function useActiveAlerts() {
         type: 'battery',
         equipmentId: sensor.id,
         equipmentType: 'Sensor',
-        message: `Critical battery level (${sensor.batteryLevel}%)`,
+        message: `Critical battery level (${sensor.battery}%)`,
         severity: 'high',
         timestamp: new Date().toISOString(),
       });
@@ -119,7 +119,7 @@ export function useActiveAlerts() {
         type: 'battery',
         equipmentId: sensor.id,
         equipmentType: 'Sensor',
-        message: `Low battery level (${sensor.batteryLevel}%)`,
+        message: `Low battery level (${sensor.battery}%)`,
         severity: 'medium',
         timestamp: new Date().toISOString(),
       });
