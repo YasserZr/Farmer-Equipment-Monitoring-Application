@@ -22,8 +22,6 @@ public interface PumpMapper {
     List<PumpDTO> toDTOList(List<ConnectedPump> pumps);
     
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "lastMaintenanceDate", ignore = true)
     @Mapping(target = "nextMaintenanceDate", ignore = true)
     @Mapping(target = "maintenanceNotes", ignore = true)
@@ -32,8 +30,6 @@ public interface PumpMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "farmId", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "installationDate", ignore = true)
     @Mapping(target = "lastMaintenanceDate", ignore = true)
     @Mapping(target = "nextMaintenanceDate", ignore = true)

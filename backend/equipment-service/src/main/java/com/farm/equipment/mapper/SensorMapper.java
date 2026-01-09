@@ -24,8 +24,6 @@ public interface SensorMapper {
     List<SensorDTO> toDTOList(List<ConnectedSensor> sensors);
     
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "lastCommunication", ignore = true)
     @Mapping(target = "active", constant = "true")
     @Mapping(target = "alertThreshold", defaultValue = "20")
@@ -35,8 +33,6 @@ public interface SensorMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "type", ignore = true)
     @Mapping(target = "farmId", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "lastCommunication", ignore = true)
     @Mapping(target = "installationDate", ignore = true)
     void updateEntityFromRequest(UpdateSensorRequest request, @MappingTarget ConnectedSensor sensor);

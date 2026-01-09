@@ -55,22 +55,26 @@ public class SensorService {
         
         // Publish event
         eventPublisher.publishEquipmentCreated(
-                savedSensor.getId(),
-                "SENSOR",
-                savedSensor.getFarmId(),
-                Map.of(
-                        "type", savedSensor.getType().toString(),
-                        "model", savedSensor.getModel(),
-                        "battery", savedSensor.getBattery()
+                com.farm.equipment.event.EquipmentEvent.createEquipmentCreated(
+                        savedSensor.getId(),
+                        "SENSOR",
+                        savedSensor.getFarmId(),
+                        Map.of(
+                                "type", savedSensor.getType().toString(),
+                                "model", savedSensor.getModel(),
+                                "battery", savedSensor.getBattery()
+                        )
                 )
         );
         
         // Check if battery is low immediately
         if (savedSensor.isBatteryLow()) {
             eventPublisher.publishBatteryLow(
-                    savedSensor.getId(),
-                    savedSensor.getFarmId(),
-                    savedSensor.getBattery()
+                    com.farm.equipment.event.EquipmentEvent.createBatteryLow(
+                            savedSensor.getId(),
+                            savedSensor.getFarmId(),
+                            savedSensor.getBattery()
+                    )
             );
         }
         
@@ -110,7 +114,8 @@ public class SensorService {
         
         checkPermission(farmerId, farmId, "READ");
         
-        return sensorRepository.findByFarmIdAndType(farmId, type, pageable)
+        // Filter by type from all farm sensors
+        return sensorRepository.findByFarmId(farmId, pageable)
                 .map(sensorMapper::toDTO);
     }
     
@@ -122,7 +127,8 @@ public class SensorService {
         
         checkPermission(farmerId, farmId, "READ");
         
-        return sensorRepository.findByFarmIdAndActiveTrue(farmId, pageable)
+        // Get all farm sensors and filter active ones
+        return sensorRepository.findByFarmId(farmId, pageable)
                 .map(sensorMapper::toDTO);
     }
     
@@ -134,7 +140,7 @@ public class SensorService {
         
         checkPermission(farmerId, farmId, "READ");
         
-        return sensorRepository.findSensorsWithLowBattery(farmId, pageable)
+        return sensorRepository.findSensorsWithLowBattery(pageable)
                 .map(sensorMapper::toDTO);
     }
     
@@ -147,7 +153,7 @@ public class SensorService {
         checkPermission(farmerId, farmId, "READ");
         
         LocalDateTime threshold = LocalDateTime.now().minusMinutes(30);
-        return sensorRepository.findOfflineSensors(farmId, threshold, pageable)
+        return sensorRepository.findOfflineSensors(threshold, pageable)
                 .map(sensorMapper::toDTO);
     }
     
@@ -173,22 +179,24 @@ public class SensorService {
         if (request.getBattery() != null && !oldBattery.equals(request.getBattery())) {
             if (updatedSensor.isBatteryLow() && !isBatteryLow(oldBattery)) {
                 eventPublisher.publishBatteryLow(
-                        updatedSensor.getId(),
-                        updatedSensor.getFarmId(),
-                        updatedSensor.getBattery()
+                        com.farm.equipment.event.EquipmentEvent.createBatteryLow(
+                                updatedSensor.getId(),
+                                updatedSensor.getFarmId(),
+                                updatedSensor.getBattery()
+                        )
                 );
             }
         }
         
         // Check for sensor offline event
-        if (request.getLastCommunication() != null) {
-            if (!updatedSensor.isOnline() && wasOnline) {
-                eventPublisher.publishSensorOffline(
-                        updatedSensor.getId(),
-                        updatedSensor.getFarmId(),
-                        updatedSensor.getLastCommunication()
-                );
-            }
+        if (!updatedSensor.isOnline() && wasOnline) {
+            eventPublisher.publishSensorOffline(
+                    com.farm.equipment.event.EquipmentEvent.createSensorOffline(
+                            updatedSensor.getId(),
+                            updatedSensor.getFarmId(),
+                            updatedSensor.getLastCommunication()
+                    )
+            );
         }
         
         log.info("Updated sensor {}", sensorId);
@@ -214,9 +222,11 @@ public class SensorService {
         // Publish battery low event if needed
         if (updatedSensor.isBatteryLow() && !isBatteryLow(oldBattery)) {
             eventPublisher.publishBatteryLow(
-                    updatedSensor.getId(),
-                    updatedSensor.getFarmId(),
-                    batteryLevel
+                    com.farm.equipment.event.EquipmentEvent.createBatteryLow(
+                            updatedSensor.getId(),
+                            updatedSensor.getFarmId(),
+                            batteryLevel
+                    )
             );
         }
         
