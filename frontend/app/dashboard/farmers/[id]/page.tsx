@@ -81,7 +81,7 @@ export default async function FarmerDetailPage({ params }: { params: { id: strin
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white font-bold text-2xl">
-                  {farmer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  {farmer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                 </div>
                 <div>
                   <CardTitle className="text-2xl">
