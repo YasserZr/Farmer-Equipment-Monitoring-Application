@@ -85,11 +85,12 @@ management:
       enabled: true
     prometheus:
       enabled: true
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
         step: 1m
+  metrics:
     distribution:
       percentiles-histogram:
         http.server.requests: true
