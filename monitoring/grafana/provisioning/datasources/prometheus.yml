@@ -1,3 +1,6 @@
+# yaml-language-server: $schema=https://json.schemastore.org/base.json
+# Grafana Datasource Provisioning Configuration
+# This file uses Grafana's datasource YAML format (not standard Kubernetes)
 apiVersion: 1
 
 datasources:
