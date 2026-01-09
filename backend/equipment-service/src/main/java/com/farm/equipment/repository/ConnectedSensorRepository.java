@@ -105,6 +105,16 @@ public interface ConnectedSensorRepository extends JpaRepository<ConnectedSensor
     long countByFarmIdAndActiveTrue(UUID farmId);
     
     /**
+     * Count sensors by active status
+     */
+    long countByActive(boolean active);
+    
+    /**
+     * Count sensors with battery less than threshold
+     */
+    long countByBatteryLessThan(Integer battery);
+    
+    /**
      * Get sensor statistics by farm
      */
     @Query("SELECT s.type, COUNT(s), AVG(s.battery) FROM ConnectedSensor s WHERE s.farmId = :farmId GROUP BY s.type")

@@ -23,6 +23,7 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Farmers', href: '/dashboard/farmers', icon: Users },
+  { name: 'Farms', href: '/dashboard/farms', icon: Map },
   { name: 'Equipment', href: '/dashboard/equipment', icon: Activity },
   { name: 'Maintenance', href: '/dashboard/equipment/maintenance', icon: Wrench },
   { name: 'Reports', href: '/dashboard/equipment/reports', icon: BarChart3 },

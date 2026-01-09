@@ -13,7 +13,17 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/equipment/status-badge';
 import { BatteryIndicator } from '@/components/equipment/battery-indicator';
-import { Search, Droplet, Activity, Filter, Wifi, WifiOff, MapPin, Wrench } from 'lucide-react';
+import { CreatePumpForm } from '@/components/equipment/create-pump-form';
+import { CreateSensorForm } from '@/components/equipment/create-sensor-form';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Search, Droplet, Activity, Filter, Wifi, WifiOff, MapPin, Wrench, Plus } from 'lucide-react';
 import { formatDate, formatDateTime } from '@/lib/utils';
 
 export default function EquipmentPage() {
@@ -21,6 +31,8 @@ export default function EquipmentPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [pumpPage, setPumpPage] = useState(0);
   const [sensorPage, setSensorPage] = useState(0);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createEquipmentType, setCreateEquipmentType] = useState<'pump' | 'sensor'>('pump');
 
   const { data: pumpsData, isLoading: pumpsLoading } = usePumps(pumpPage, 10);
   const { data: sensorsData, isLoading: sensorsLoading } = useSensors(sensorPage, 10);
@@ -41,6 +53,40 @@ export default function EquipmentPage() {
             {isConnected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
             {isConnected ? 'Live' : 'Offline'}
           </Badge>
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Equipment
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create New Equipment</DialogTitle>
+                <DialogDescription>
+                  Add a new pump or sensor to your equipment inventory
+                </DialogDescription>
+              </DialogHeader>
+              <Tabs value={createEquipmentType} onValueChange={(v) => setCreateEquipmentType(v as 'pump' | 'sensor')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="pump">
+                    <Droplet className="w-4 h-4 mr-2" />
+                    Pump
+                  </TabsTrigger>
+                  <TabsTrigger value="sensor">
+                    <Activity className="w-4 h-4 mr-2" />
+                    Sensor
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="pump" className="mt-6">
+                  <CreatePumpForm onSuccess={() => setCreateDialogOpen(false)} />
+                </TabsContent>
+                <TabsContent value="sensor" className="mt-6">
+                  <CreateSensorForm onSuccess={() => setCreateDialogOpen(false)} />
+                </TabsContent>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
           <Button asChild>
             <Link href="/dashboard/equipment/maintenance">
               <Wrench className="w-4 h-4 mr-2" />
