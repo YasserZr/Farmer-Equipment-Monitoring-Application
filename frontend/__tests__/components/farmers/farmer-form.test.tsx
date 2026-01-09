@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import FarmerForm from '@/components/farmers/farmer-form';
+import { FarmerForm } from '@/components/farmers/farmer-form';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const createTestQueryClient = () =>

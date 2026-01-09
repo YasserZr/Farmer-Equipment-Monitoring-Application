@@ -41,7 +41,7 @@ describe('useFarmers Hook', () => {
     });
     global.fetch = mockFetch;
 
-    const { result } = renderHook(() => useFarmers({ page: 0, size: 10 }), {
+    const { result } = renderHook(() => useFarmers(0, 10), {
       wrapper: createWrapper(),
     });
 
@@ -57,7 +57,7 @@ describe('useFarmers Hook', () => {
     const mockFetch = vi.fn().mockRejectedValue(new Error('API Error'));
     global.fetch = mockFetch;
 
-    const { result } = renderHook(() => useFarmers({ page: 0, size: 10 }), {
+    const { result } = renderHook(() => useFarmers(0, 10), {
       wrapper: createWrapper(),
     });
 

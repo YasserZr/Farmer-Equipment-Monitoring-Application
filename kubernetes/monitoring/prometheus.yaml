@@ -1,4 +1,5 @@
 # Kubernetes Prometheus Monitoring Configuration
+# yaml-language-server: $schema=https://json.schemastore.org/base.json
 apiVersion: v1
 kind: Namespace
 metadata:

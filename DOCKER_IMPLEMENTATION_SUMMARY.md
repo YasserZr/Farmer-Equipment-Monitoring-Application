@@ -9,27 +9,32 @@ Complete Docker configuration has been implemented for the entire Farmer Equipme
 ### 1. Docker Images (12 Services)
 
 #### Infrastructure Services (3)
+
 - **Eureka Server** (8761) - Service discovery and registration
 - **Config Server** (8888) - Centralized configuration management
 - **API Gateway** (8080) - Single entry point with routing
 
 #### Business Services (3)
+
 - **Farmers Service** (8081) - Farmer and farm management
 - **Equipment Service** (8082) - Equipment monitoring and telemetry
 - **Supervision Service** (8083) - Event processing and alerts
 
 #### Data Layer (4)
+
 - **PostgreSQL** (5432) - Farmers database
 - **PostgreSQL** (5433) - Equipment database
 - **PostgreSQL** (5434) - Supervision database
 - **RabbitMQ** (5672, 15672) - Message broker with management UI
 
 #### Frontend (1)
+
 - **Next.js Application** (3000) - Web interface
 
 ### 2. Dockerfiles
 
 #### Spring Boot Services (7 Dockerfiles)
+
 - Multi-stage builds using Maven and JRE Alpine
 - Build stage: Maven 3.9.6 + Eclipse Temurin 17
 - Runtime stage: Eclipse Temurin 17 JRE Alpine
