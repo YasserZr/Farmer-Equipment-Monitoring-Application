@@ -77,8 +77,8 @@ public interface EquipmentEventRepository extends JpaRepository<EquipmentEvent, 
      * Advanced filtering with multiple criteria
      */
     @Query("SELECT e FROM EquipmentEvent e WHERE " +
-           "(:farmId IS NULL OR e.farmId = :farmId) AND " +
-           "(:equipmentId IS NULL OR e.equipmentId = :equipmentId) AND " +
+           "( CAST(:farmId as string) IS NULL OR e.farmId = :farmId) AND " +
+           "( CAST(:equipmentId as string) IS NULL OR e.equipmentId = :equipmentId) AND " +
            "(:eventType IS NULL OR e.eventType = :eventType) AND " +
            "(:severity IS NULL OR e.severity = :severity) AND " +
            "(:startDate IS NULL OR e.timestamp >= :startDate) AND " +

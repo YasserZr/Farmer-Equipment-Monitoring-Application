@@ -54,6 +54,20 @@ public class PumpController {
         return ResponseEntity.status(HttpStatus.CREATED).body(pump);
     }
     
+    @Operation(summary = "Get all pumps", description = "Retrieve all pumps with pagination")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pumps retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping
+    public ResponseEntity<Page<PumpDTO>> getAllPumps(
+            @PageableDefault(size = 20) Pageable pageable) {
+        
+        log.info("GET /api/pumps - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        Page<PumpDTO> pumps = pumpService.getAllPumps(pageable);
+        return ResponseEntity.ok(pumps);
+    }
+    
     @Operation(summary = "Get pump by ID", description = "Retrieve a specific pump by its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pump found",

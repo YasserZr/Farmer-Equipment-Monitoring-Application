@@ -53,6 +53,20 @@ public class SensorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(sensor);
     }
     
+    @Operation(summary = "Get all sensors", description = "Retrieve all sensors with pagination")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sensors retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping
+    public ResponseEntity<Page<SensorDTO>> getAllSensors(
+            @PageableDefault(size = 20) Pageable pageable) {
+        
+        log.info("GET /api/sensors - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        Page<SensorDTO> sensors = sensorService.getAllSensors(pageable);
+        return ResponseEntity.ok(sensors);
+    }
+    
     @Operation(summary = "Get sensor by ID", description = "Retrieve a specific sensor by its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Sensor found",

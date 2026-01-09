@@ -65,6 +65,12 @@ public class ConnectedSensor extends BaseEntity {
     @Column(name = "alert_threshold")
     private Integer alertThreshold = 20;
     
+    @Column(name = "last_maintenance_date")
+    private LocalDateTime lastMaintenanceDate;
+    
+    @Column(name = "next_maintenance_date")
+    private LocalDateTime nextMaintenanceDate;
+    
     /**
      * Check if battery is low
      * @return true if battery is below alert threshold

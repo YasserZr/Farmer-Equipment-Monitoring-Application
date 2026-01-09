@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
-import apiClient from '@/lib/api-client';
+import * as apiClient from '@/lib/api-client';
+import type { Farmer } from '@/types/farmer';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -32,22 +33,36 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      // Mock authentication - bypassing auth service for now
-      // TODO: Implement proper authentication service
-      const mockUser = {
-        id: '1',
-        name: 'Admin User',
-        email: data.email,
-        role: 'OWNER' as const,
-      };
-      const mockToken = 'mock-jwt-token';
+      // Fetch farmer by email
+      const farmer = await apiClient.get<Farmer>(`/api/farmers/email/${encodeURIComponent(data.email)}`);
       
-      login(mockUser, mockToken);
+      // TODO: Validate password with auth service once implemented
+      // For now, we'll login if the farmer exists
+      if (!farmer) {
+        toast.error('No account found with this email');
+        return;
+      }
+
+      const user = {
+        id: farmer.id,
+        name: farmer.name,
+        email: farmer.email,
+        role: farmer.role,
+      };
+      
+      // Generate a temporary token (will be replaced by real JWT from auth service)
+      const token = `temp-token-${farmer.id}`;
+      
+      login(user, token);
       
       toast.success('Login successful');
       router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Login failed');
+      if (error?.response?.status === 404) {
+        toast.error('No account found with this email');
+      } else {
+        toast.error(error?.response?.data?.message || 'Login failed');
+      }
     } finally {
       setIsLoading(false);
     }

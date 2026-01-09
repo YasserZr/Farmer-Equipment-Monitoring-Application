@@ -86,6 +86,16 @@ public class PumpService {
     }
     
     /**
+     * Get all pumps with pagination
+     */
+    public Page<PumpDTO> getAllPumps(Pageable pageable) {
+        log.debug("Getting all pumps - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        
+        return pumpRepository.findAll(pageable)
+                .map(pumpMapper::toDTO);
+    }
+    
+    /**
      * Get all pumps for a farm
      */
     public Page<PumpDTO> getPumpsByFarm(UUID farmerId, UUID farmId, Pageable pageable) {

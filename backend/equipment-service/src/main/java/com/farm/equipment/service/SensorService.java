@@ -95,6 +95,15 @@ public class SensorService {
     }
     
     /**
+     * Get all sensors with pagination
+     */
+    public Page<SensorDTO> getAllSensors(Pageable pageable) {
+        log.debug("Getting all sensors - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        return sensorRepository.findAll(pageable)
+                .map(sensorMapper::toDTO);
+    }
+    
+    /**
      * Get all sensors for a farm
      */
     public Page<SensorDTO> getSensorsByFarm(UUID farmerId, UUID farmId, Pageable pageable) {

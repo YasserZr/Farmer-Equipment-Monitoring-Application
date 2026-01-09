@@ -36,7 +36,7 @@ spring:
         - id: equipment-service
           uri: lb://equipment-service
           predicates:
-            - Path=/api/equipment/**,/api/pumps/**,/api/sensors/**
+            - Path=/api/equipment/**,/api/pumps/**,/api/sensors/**,/api/maintenance/**
           filters:
             - name: CircuitBreaker
               args:

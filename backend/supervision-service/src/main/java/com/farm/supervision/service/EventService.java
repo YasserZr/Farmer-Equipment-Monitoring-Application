@@ -34,6 +34,19 @@ public class EventService {
     public Page<EventDTO> getAllEvents(EventFilterRequest filter, Pageable pageable) {
         log.debug("Getting events with filter: {}", filter);
         
+        // If no filters are provided, return all events
+        if (filter.getFarmId() == null && 
+            filter.getEquipmentId() == null && 
+            filter.getEventType() == null && 
+            filter.getSeverity() == null && 
+            filter.getStartDate() == null && 
+            filter.getEndDate() == null && 
+            filter.getAcknowledged() == null) {
+            
+            log.debug("No filters provided, returning all events");
+            return eventRepository.findAll(pageable).map(this::convertToDTO);
+        }
+        
         Page<EquipmentEvent> events = eventRepository.findByFilters(
                 filter.getFarmId(),
                 filter.getEquipmentId(),
