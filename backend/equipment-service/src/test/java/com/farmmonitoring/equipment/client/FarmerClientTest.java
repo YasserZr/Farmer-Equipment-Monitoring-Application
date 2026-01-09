@@ -1,97 +1,93 @@
-package com.farmmonitoring.equipment.client;
+package com.farm.equipment.client;
 
-import com.farmmonitoring.equipment.dto.FarmerDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.test.context.ActiveProfiles;
+import feign.FeignException;
+
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 @ActiveProfiles("test")
-@DisplayName("Farmer Client Feign Integration Tests")
+@DisplayName("Farmers Feign Client Integration Tests")
 class FarmerClientTest {
 
     @Autowired
-    private FarmerClient farmerClient;
+    private FarmersFeignClient farmersFeignClient;
 
     @Test
-    @DisplayName("Should fetch farmer by id successfully")
-    void testGetFarmerById_Success() {
+    @DisplayName("Should verify farmer exists successfully")
+    void testFarmerExists_Success() {
         // Given
-        Long farmerId = 1L;
-        String responseBody = """
-                {
-                    "id": 1,
-                    "firstName": "John",
-                    "lastName": "Doe",
-                    "email": "john.doe@example.com",
-                    "phone": "+1234567890",
-                    "active": true
-                }
-                """;
+        UUID farmerId = UUID.randomUUID();
 
-        stubFor(get(urlEqualTo("/api/farmers/" + farmerId))
+        stubFor(get(urlEqualTo("/api/farmers/" + farmerId + "/exists"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        .withBody(responseBody)));
+                        .withBody("true")));
 
         // When
-        FarmerDTO farmer = farmerClient.getFarmerById(farmerId);
+        Boolean exists = farmersFeignClient.farmerExists(farmerId);
 
         // Then
-        assertThat(farmer).isNotNull();
-        assertThat(farmer.getId()).isEqualTo(1L);
-        assertThat(farmer.getFirstName()).isEqualTo("John");
-        assertThat(farmer.getEmail()).isEqualTo("john.doe@example.com");
+        assertThat(exists).isTrue();
 
-        verify(getRequestedFor(urlEqualTo("/api/farmers/" + farmerId)));
+        verify(getRequestedFor(urlEqualTo("/api/farmers/" + farmerId + "/exists")));
     }
 
     @Test
     @DisplayName("Should handle farmer not found")
-    void testGetFarmerById_NotFound() {
+    void testFarmerExists_NotFound() {
         // Given
-        Long farmerId = 999L;
+        UUID farmerId = UUID.randomUUID();
 
-        stubFor(get(urlEqualTo("/api/farmers/" + farmerId))
+        stubFor(get(urlEqualTo("/api/farmers/" + farmerId + "/exists"))
                 .willReturn(aResponse()
                         .withStatus(404)
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"message\":\"Farmer not found\"}")));
 
         // When & Then
-        try {
-            farmerClient.getFarmerById(farmerId);
-        } catch (Exception e) {
-            assertThat(e).isInstanceOf(FeignException.class);
-        }
+        assertThatThrownBy(() -> farmersFeignClient.farmerExists(farmerId))
+                .isInstanceOf(FeignException.class);
 
-        verify(getRequestedFor(urlEqualTo("/api/farmers/" + farmerId)));
+        verify(getRequestedFor(urlEqualTo("/api/farmers/" + farmerId + "/exists")));
     }
 
     @Test
-    @DisplayName("Should verify farmer exists")
-    void testVerifyFarmerExists_Success() {
+    @DisplayName("Should verify permission check")
+    void testCheckPermission_Success() {
         // Given
-        Long farmerId = 1L;
+        UUID farmerId = UUID.randomUUID();
+        UUID resourceId = UUID.randomUUID();
+        String responseBody = """
+                {
+                    "allowed": true,
+                    "farmerId": "" + farmerId + "",
+                    "resourceId": "" + resourceId + ""
+                }
+                """;
 
-        stubFor(head(urlEqualTo("/api/farmers/" + farmerId))
+        stubFor(get(urlMatching("/api/farmers/" + farmerId + "/permissions.*"))
                 .willReturn(aResponse()
-                        .withStatus(200)));
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(responseBody)));
 
         // When
-        boolean exists = farmerClient.farmerExists(farmerId);
+        PermissionCheckResponse response = farmersFeignClient.checkPermission(farmerId, resourceId, "READ");
 
         // Then
-        assertThat(exists).isTrue();
-
-        verify(headRequestedFor(urlEqualTo("/api/farmers/" + farmerId)));
+        assertThat(response).isNotNull();
+        assertThat(response.isAllowed()).isTrue();
     }
 }

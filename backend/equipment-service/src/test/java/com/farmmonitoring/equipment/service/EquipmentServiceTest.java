@@ -1,13 +1,14 @@
-package com.farmmonitoring.equipment.service;
+package com.farm.equipment.service;
 
-import com.farmmonitoring.equipment.dto.PumpDTO;
-import com.farmmonitoring.equipment.dto.PumpStatusUpdateDTO;
-import com.farmmonitoring.equipment.entity.Pump;
-import com.farmmonitoring.equipment.enums.EquipmentStatus;
-import com.farmmonitoring.equipment.event.EquipmentEventPublisher;
-import com.farmmonitoring.equipment.exception.ResourceNotFoundException;
-import com.farmmonitoring.equipment.mapper.PumpMapper;
-import com.farmmonitoring.equipment.repository.PumpRepository;
+import com.farm.equipment.dto.request.CreatePumpRequest;
+import com.farm.equipment.dto.request.UpdatePumpRequest;
+import com.farm.equipment.dto.response.PumpDTO;
+import com.farm.equipment.model.ConnectedPump;
+import com.farm.equipment.model.EquipmentStatus;
+import com.farm.equipment.service.EquipmentEventPublisher;
+import com.farm.equipment.exception.PumpNotFoundException;
+import com.farm.equipment.mapper.PumpMapper;
+import com.farm.equipment.repository.ConnectedPumpRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,23 +16,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Equipment Service Unit Tests")
-class EquipmentServiceTest {
+@DisplayName("Pump Service Unit Tests")
+class PumpServiceTest {
 
     @Mock
-    private PumpRepository pumpRepository;
+    private ConnectedPumpRepository pumpRepository;
 
     @Mock
     private PumpMapper pumpMapper;
@@ -40,197 +46,155 @@ class EquipmentServiceTest {
     private EquipmentEventPublisher eventPublisher;
 
     @InjectMocks
-    private EquipmentService equipmentService;
+    private PumpService pumpService;
 
-    private Pump pump;
+    private ConnectedPump pump;
     private PumpDTO pumpDTO;
+    private CreatePumpRequest createRequest;
+    private UUID farmerId;
+    private UUID pumpId;
 
     @BeforeEach
     void setUp() {
-        pump = new Pump();
-        pump.setId(1L);
-        pump.setSerialNumber("PUMP-001");
-        pump.setModel("Model-X");
-        pump.setStatus(EquipmentStatus.ACTIVE);
-        pump.setFarmerId(1L);
-        pump.setLatitude(40.7128);
-        pump.setLongitude(-74.0060);
-        pump.setLastMaintenanceDate(LocalDateTime.now().minusDays(30));
+        farmerId = UUID.randomUUID();
+        pumpId = UUID.randomUUID();
+        
+        pump = ConnectedPump.builder()
+                .id(pumpId)
+                .farmId(UUID.randomUUID())
+                .model("Model-X")
+                .status(EquipmentStatus.ACTIVE)
+                .maxFlow(new java.math.BigDecimal("100.0"))
+                .location("Field A")
+                .installationDate(LocalDateTime.now().minusMonths(6))
+                .lastMaintenanceDate(LocalDateTime.now().minusDays(30))
+                .build();
 
-        pumpDTO = new PumpDTO();
-        pumpDTO.setId(1L);
-        pumpDTO.setSerialNumber("PUMP-001");
-        pumpDTO.setModel("Model-X");
-        pumpDTO.setStatus("ACTIVE");
-        pumpDTO.setFarmerId(1L);
+        pumpDTO = PumpDTO.builder()
+                .id(pumpId)
+                .farmId(pump.getFarmId())
+                .model("Model-X")
+                .status(EquipmentStatus.ACTIVE)
+                .maxFlow(new java.math.BigDecimal("100.0"))
+                .location("Field A")
+                .build();
+                
+        createRequest = CreatePumpRequest.builder()
+                .farmId(pump.getFarmId())
+                .model("Model-X")
+                .maxFlow(new java.math.BigDecimal("100.0"))
+                .location("Field A")
+                .installationDate(LocalDateTime.now())
+                .build();
     }
 
     @Test
     @DisplayName("Should create pump successfully")
     void testCreatePump_Success() {
         // Given
-        when(pumpMapper.toEntity(any(PumpDTO.class))).thenReturn(pump);
-        when(pumpRepository.save(any(Pump.class))).thenReturn(pump);
-        when(pumpMapper.toDTO(any(Pump.class))).thenReturn(pumpDTO);
-        doNothing().when(eventPublisher).publishEquipmentCreated(any(Pump.class));
+        when(pumpMapper.toEntity(any(CreatePumpRequest.class))).thenReturn(pump);
+        when(pumpRepository.save(any(ConnectedPump.class))).thenReturn(pump);
+        when(pumpMapper.toDTO(any(ConnectedPump.class))).thenReturn(pumpDTO);
 
         // When
-        PumpDTO result = equipmentService.createPump(pumpDTO);
+        PumpDTO result = pumpService.createPump(farmerId, createRequest);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getSerialNumber()).isEqualTo("PUMP-001");
-        assertThat(result.getStatus()).isEqualTo("ACTIVE");
+        assertThat(result.getModel()).isEqualTo("Model-X");
+        assertThat(result.getStatus()).isEqualTo(EquipmentStatus.ACTIVE);
 
-        verify(pumpRepository, times(1)).save(any(Pump.class));
-        verify(eventPublisher, times(1)).publishEquipmentCreated(any(Pump.class));
+        verify(pumpRepository, times(1)).save(any(ConnectedPump.class));
     }
 
     @Test
-    @DisplayName("Should update pump status successfully")
-    void testUpdatePumpStatus_Success() {
+    @DisplayName("Should update pump successfully")
+    void testUpdatePump_Success() {
         // Given
-        PumpStatusUpdateDTO statusUpdate = new PumpStatusUpdateDTO();
-        statusUpdate.setStatus("MAINTENANCE");
-        statusUpdate.setReason("Scheduled maintenance");
+        UpdatePumpRequest updateRequest = UpdatePumpRequest.builder()
+                .status(EquipmentStatus.MAINTENANCE)
+                .location("Field B")
+                .build();
 
-        when(pumpRepository.findById(1L)).thenReturn(Optional.of(pump));
-        when(pumpRepository.save(any(Pump.class))).thenReturn(pump);
-        doNothing().when(eventPublisher).publishStatusChanged(any(Pump.class), anyString());
+        when(pumpRepository.findById(pumpId)).thenReturn(Optional.of(pump));
+        when(pumpRepository.save(any(ConnectedPump.class))).thenReturn(pump);
+        when(pumpMapper.toDTO(any(ConnectedPump.class))).thenReturn(pumpDTO);
 
         // When
-        equipmentService.updatePumpStatus(1L, statusUpdate);
+        PumpDTO result = pumpService.updatePump(farmerId, pumpId, updateRequest);
 
         // Then
-        verify(pumpRepository, times(1)).findById(1L);
-        verify(pumpRepository, times(1)).save(any(Pump.class));
-        verify(eventPublisher, times(1)).publishStatusChanged(any(Pump.class), eq("ACTIVE"));
+        assertThat(result).isNotNull();
+        verify(pumpRepository, times(1)).findById(pumpId);
+        verify(pumpRepository, times(1)).save(any(ConnectedPump.class));
     }
 
     @Test
-    @DisplayName("Should throw exception when pump not found for status update")
-    void testUpdatePumpStatus_NotFound() {
+    @DisplayName("Should throw exception when pump not found")
+    void testGetPumpById_NotFound() {
         // Given
-        PumpStatusUpdateDTO statusUpdate = new PumpStatusUpdateDTO();
-        statusUpdate.setStatus("MAINTENANCE");
-
-        when(pumpRepository.findById(anyLong())).thenReturn(Optional.empty());
+        UUID nonExistentId = UUID.randomUUID();
+        when(pumpRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         // When & Then
-        assertThatThrownBy(() -> equipmentService.updatePumpStatus(999L, statusUpdate))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Pump not found with id: 999");
+        assertThatThrownBy(() -> pumpService.getPumpById(nonExistentId))
+                .isInstanceOf(PumpNotFoundException.class);
 
-        verify(pumpRepository, times(1)).findById(999L);
-        verify(eventPublisher, never()).publishStatusChanged(any(), anyString());
+        verify(pumpRepository, times(1)).findById(nonExistentId);
     }
 
     @Test
     @DisplayName("Should get pump by id successfully")
     void testGetPumpById_Success() {
         // Given
-        when(pumpRepository.findById(1L)).thenReturn(Optional.of(pump));
-        when(pumpMapper.toDTO(any(Pump.class))).thenReturn(pumpDTO);
+        when(pumpRepository.findById(pumpId)).thenReturn(Optional.of(pump));
+        when(pumpMapper.toDTO(any(ConnectedPump.class))).thenReturn(pumpDTO);
 
         // When
-        PumpDTO result = equipmentService.getPumpById(1L);
+        PumpDTO result = pumpService.getPumpById(pumpId);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getSerialNumber()).isEqualTo("PUMP-001");
+        assertThat(result.getId()).isEqualTo(pumpId);
+        assertThat(result.getModel()).isEqualTo("Model-X");
 
-        verify(pumpRepository, times(1)).findById(1L);
+        verify(pumpRepository, times(1)).findById(pumpId);
     }
 
     @Test
-    @DisplayName("Should get pumps by farmer id")
-    void testGetPumpsByFarmerId() {
+    @DisplayName("Should get pumps by farm id")
+    void testGetPumpsByFarmId() {
         // Given
-        List<Pump> pumps = Arrays.asList(pump);
-        when(pumpRepository.findByFarmerId(1L)).thenReturn(pumps);
-        when(pumpMapper.toDTO(any(Pump.class))).thenReturn(pumpDTO);
+        UUID farmId = UUID.randomUUID();
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ConnectedPump> pumpPage = new PageImpl<>(Arrays.asList(pump));
+        
+        when(pumpRepository.findByFarmId(farmId, pageable)).thenReturn(pumpPage);
+        when(pumpMapper.toDTO(any(ConnectedPump.class))).thenReturn(pumpDTO);
 
         // When
-        List<PumpDTO> result = equipmentService.getPumpsByFarmerId(1L);
+        Page<PumpDTO> result = pumpService.getPumpsByFarm(farmerId, farmId, pageable);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getFarmerId()).isEqualTo(1L);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getFarmId()).isEqualTo(pumpDTO.getFarmId());
 
-        verify(pumpRepository, times(1)).findByFarmerId(1L);
-    }
-
-    @Test
-    @DisplayName("Should get pumps by status")
-    void testGetPumpsByStatus() {
-        // Given
-        List<Pump> activePumps = Arrays.asList(pump);
-        when(pumpRepository.findByStatus(EquipmentStatus.ACTIVE)).thenReturn(activePumps);
-        when(pumpMapper.toDTO(any(Pump.class))).thenReturn(pumpDTO);
-
-        // When
-        List<PumpDTO> result = equipmentService.getPumpsByStatus(EquipmentStatus.ACTIVE);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getStatus()).isEqualTo("ACTIVE");
-
-        verify(pumpRepository, times(1)).findByStatus(EquipmentStatus.ACTIVE);
+        verify(pumpRepository, times(1)).findByFarmId(farmId, pageable);
     }
 
     @Test
     @DisplayName("Should delete pump successfully")
     void testDeletePump_Success() {
         // Given
-        when(pumpRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(pumpRepository).deleteById(1L);
-        doNothing().when(eventPublisher).publishEquipmentDeleted(1L);
+        when(pumpRepository.findById(pumpId)).thenReturn(Optional.of(pump));
+        doNothing().when(pumpRepository).delete(pump);
 
         // When
-        equipmentService.deletePump(1L);
+        pumpService.deletePump(farmerId, pumpId);
 
         // Then
-        verify(pumpRepository, times(1)).existsById(1L);
-        verify(pumpRepository, times(1)).deleteById(1L);
-        verify(eventPublisher, times(1)).publishEquipmentDeleted(1L);
-    }
-
-    @Test
-    @DisplayName("Should find pumps needing maintenance")
-    void testFindPumpsNeedingMaintenance() {
-        // Given
-        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
-        List<Pump> pumpsNeedingMaintenance = Arrays.asList(pump);
-        
-        when(pumpRepository.findByLastMaintenanceDateBefore(any(LocalDateTime.class)))
-                .thenReturn(pumpsNeedingMaintenance);
-        when(pumpMapper.toDTO(any(Pump.class))).thenReturn(pumpDTO);
-
-        // When
-        List<PumpDTO> result = equipmentService.findPumpsNeedingMaintenance(30);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(1);
-
-        verify(pumpRepository, times(1)).findByLastMaintenanceDateBefore(any(LocalDateTime.class));
-    }
-
-    @Test
-    @DisplayName("Should count pumps by status")
-    void testCountPumpsByStatus() {
-        // Given
-        when(pumpRepository.countByStatus(EquipmentStatus.ACTIVE)).thenReturn(5L);
-
-        // When
-        Long count = equipmentService.countPumpsByStatus(EquipmentStatus.ACTIVE);
-
-        // Then
-        assertThat(count).isEqualTo(5L);
-
-        verify(pumpRepository, times(1)).countByStatus(EquipmentStatus.ACTIVE);
+        verify(pumpRepository, times(1)).findById(pumpId);
+        verify(pumpRepository, times(1)).delete(pump);
     }
 }
