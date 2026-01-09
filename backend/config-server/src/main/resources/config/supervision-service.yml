@@ -1,0 +1,18 @@
+# Supervision Service Configuration  
+spring:
+  datasource:
+    url: jdbc:postgresql://supervision-db:5432/supervision_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+server:
+  port: 8083
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/

@@ -8,21 +8,13 @@ spring:
   cloud:
     config:
       server:
-        git:
-          # Use local file system (for development)
-          # In production, use actual Git repository URL
-          uri: file:///${user.home}/config-repo
-          # For remote Git repository, use:
-          # uri: https://github.com/yourusername/config-repo
-          # username: ${GIT_USERNAME}
-          # password: ${GIT_PASSWORD}
-          default-label: main
-          clone-on-start: true
-          search-paths:
-            - '{application}'
-        # Fallback to native (local filesystem) if Git fails
-        native:
-          search-locations: classpath:/config
+        # Use composite profile to support both git and native
+        composite:
+          - type: native
+            search-locations: classpath:/config
+  
+  profiles:
+    active: composite
   
   # Security for encryption
   # To generate a key: keytool -genkeypair -alias config-server-key -keyalg RSA -keysize 2048 -keystore config-server.jks -validity 3650

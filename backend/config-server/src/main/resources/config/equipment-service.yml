@@ -1,0 +1,18 @@
+# Equipment Service Configuration
+spring:
+  datasource:
+    url: jdbc:postgresql://equipment-db:5432/equipment_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/

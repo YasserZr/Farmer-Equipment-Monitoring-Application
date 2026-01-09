@@ -24,7 +24,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@lombok.experimental.SuperBuilder
 @ToString(exclude = "farms")
 @EqualsAndHashCode(callSuper = false, of = "id")
 public class Farmer extends BaseEntity {

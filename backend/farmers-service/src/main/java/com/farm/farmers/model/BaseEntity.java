@@ -1,7 +1,9 @@
 package com.farm.farmers.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -16,6 +18,9 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @MappedSuperclass
+@lombok.experimental.SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class BaseEntity implements Serializable {
     
     @CreationTimestamp

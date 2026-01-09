@@ -1,0 +1,25 @@
+# API Gateway Configuration
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: farmers-service
+          uri: lb://farmers-service
+          predicates:
+            - Path=/api/farmers/**
+        - id: equipment-service
+          uri: lb://equipment-service
+          predicates:
+            - Path=/api/equipment/**
+        - id: supervision-service
+          uri: lb://supervision-service
+          predicates:
+            - Path=/api/supervision/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
