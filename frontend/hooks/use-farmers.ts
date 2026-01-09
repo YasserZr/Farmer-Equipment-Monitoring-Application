@@ -76,7 +76,7 @@ export function useDeleteFarmer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => apiClient.del(`/api/farmers/${id}`),
+    mutationFn: (id: string) => apiClient.delete(`/api/farmers/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [FARMERS_KEY] });
       toast.success('Farmer deleted successfully');
@@ -145,7 +145,7 @@ export function useDeleteFarm(farmerId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (farmId: string) => apiClient.del(`/api/farmers/${farmerId}/farms/${farmId}`),
+    mutationFn: (farmId: string) => apiClient.delete(`/api/farmers/${farmerId}/farms/${farmId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [FARMS_KEY, farmerId] });
       toast.success('Farm deleted successfully');
