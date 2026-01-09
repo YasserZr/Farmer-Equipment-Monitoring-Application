@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
+import * as apiClient from '@/lib/api-client';
 import type {
   EquipmentEvent,
   EventFilterRequest,
@@ -88,7 +88,7 @@ export function useFilterEvents(filter: EventFilterRequest, page = 0, size = 20)
       apiClient.post<PaginatedResponse<EquipmentEvent>>(
         `/api/events/filter?page=${page}&size=${size}`,
         filter
-      ).then(response => response.data),
+      ),
     enabled: Object.keys(filter).length > 0,
   });
 }

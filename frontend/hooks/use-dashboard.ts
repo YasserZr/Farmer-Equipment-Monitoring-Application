@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
+import * as apiClient from '@/lib/api-client';
 import { useFarmers } from './use-farmers';
 import { usePumps, useSensors } from './use-equipment';
 import { useEvents } from './use-events';

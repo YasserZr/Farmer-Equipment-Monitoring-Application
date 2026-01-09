@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
+import * as apiClient from '@/lib/api-client';
 import type {
   Farmer,
   CreateFarmerRequest,
@@ -23,7 +23,7 @@ const FARMS_KEY = 'farms';
 export function useFarmers(page = 0, size = 10) {
   return useQuery<PaginatedResponse<Farmer>>({
     queryKey: [FARMERS_KEY, page, size],
-    queryFn: () => apiClient.get(`/api/farmers?page=${page}&size=${size}`),
+    queryFn: () => apiClient.get<PaginatedResponse<Farmer>>(`/api/farmers?page=${page}&size=${size}`),
   });
 }
 
@@ -31,7 +31,7 @@ export function useFarmers(page = 0, size = 10) {
 export function useFarmer(id: string) {
   return useQuery<Farmer>({
     queryKey: [FARMERS_KEY, id],
-    queryFn: () => apiClient.get(`/api/farmers/${id}`),
+    queryFn: () => apiClient.get<Farmer>(`/api/farmers/${id}`),
     enabled: !!id,
   });
 }
@@ -76,7 +76,7 @@ export function useDeleteFarmer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/api/farmers/${id}`),
+    mutationFn: (id: string) => apiClient.del<void>(`/api/farmers/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [FARMERS_KEY] });
       toast.success('Farmer deleted successfully');
@@ -91,7 +91,7 @@ export function useDeleteFarmer() {
 export function useFarms(farmerId: string, page = 0, size = 10) {
   return useQuery<PaginatedResponse<Farm>>({
     queryKey: [FARMS_KEY, farmerId, page, size],
-    queryFn: () => apiClient.get(`/api/farmers/${farmerId}/farms?page=${page}&size=${size}`),
+    queryFn: () => apiClient.get<PaginatedResponse<Farm>>(`/api/farmers/${farmerId}/farms?page=${page}&size=${size}`),
     enabled: !!farmerId,
   });
 }
@@ -100,7 +100,7 @@ export function useFarms(farmerId: string, page = 0, size = 10) {
 export function useFarm(farmerId: string, farmId: string) {
   return useQuery<Farm>({
     queryKey: [FARMS_KEY, farmerId, farmId],
-    queryFn: () => apiClient.get(`/api/farmers/${farmerId}/farms/${farmId}`),
+    queryFn: () => apiClient.get<Farm>(`/api/farmers/${farmerId}/farms/${farmId}`),
     enabled: !!farmerId && !!farmId,
   });
 }
@@ -145,7 +145,7 @@ export function useDeleteFarm(farmerId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (farmId: string) => apiClient.delete(`/api/farmers/${farmerId}/farms/${farmId}`),
+    mutationFn: (farmId: string) => apiClient.del<void>(`/api/farmers/${farmerId}/farms/${farmId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [FARMS_KEY, farmerId] });
       toast.success('Farm deleted successfully');
@@ -160,6 +160,6 @@ export function useDeleteFarm(farmerId: string) {
 export function useFarmerStatistics() {
   return useQuery<FarmerStatistics>({
     queryKey: [FARMERS_KEY, 'statistics'],
-    queryFn: () => apiClient.get('/api/farmers/statistics'),
+    queryFn: () => apiClient.get<FarmerStatistics>('/api/farmers/statistics'),
   });
 }

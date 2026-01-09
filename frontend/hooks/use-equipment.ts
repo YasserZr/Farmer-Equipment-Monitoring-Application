@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '@/lib/api-client';
+import * as apiClient from '@/lib/api-client';
 import type {
   ConnectedPump,
   ConnectedSensor,
@@ -89,7 +89,7 @@ export function useDeletePump() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/api/pumps/${id}`),
+    mutationFn: (id: string) => apiClient.del<void>(`/api/pumps/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PUMPS_KEY] });
       queryClient.invalidateQueries({ queryKey: [EQUIPMENT_KEY] });
@@ -196,7 +196,7 @@ export function useDeleteSensor() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/api/sensors/${id}`),
+    mutationFn: (id: string) => apiClient.del<void>(`/api/sensors/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [SENSORS_KEY] });
       queryClient.invalidateQueries({ queryKey: [EQUIPMENT_KEY] });
