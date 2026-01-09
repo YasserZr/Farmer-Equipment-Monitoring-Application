@@ -107,13 +107,13 @@ export default function FarmersPage() {
       )}
 
       {/* Content */}
-      {!isLoading && data && (
+      {!isLoading && data && data.content && (
         <>
           {viewMode === 'table' ? (
             <FarmersDataTable
               data={data}
               onDelete={(id) => {
-                const farmer = data.content.find((f) => f.id === id);
+                const farmer = data.content?.find((f) => f.id === id);
                 if (farmer) {
                   handleDeleteClick(id, farmer.name);
                 }
@@ -122,7 +122,7 @@ export default function FarmersPage() {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data.content.map((farmer) => (
+              {data.content?.map((farmer) => (
                 <FarmerCard
                   key={farmer.id}
                   farmer={farmer}
@@ -130,7 +130,7 @@ export default function FarmersPage() {
                     handleDeleteClick(id, farmer.name)
                   }
                 />
-              ))}
+              )) || null}
             </div>
           )}
         </>

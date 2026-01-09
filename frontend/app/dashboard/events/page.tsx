@@ -70,7 +70,8 @@ export default function EventsPage() {
 
       {/* Events List */}
       <div className="space-y-4">
-        {data?.content.map((event) => (
+        {data?.content && data.content.length > 0 ? (
+          data.content.map((event) => (
           <div
             key={event.id}
             className={`bg-white rounded-lg shadow-md p-6 border-l-4 ${
@@ -155,7 +156,13 @@ export default function EventsPage() {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        ) : (
+          <div className="text-center py-12 bg-white rounded-lg shadow">
+            <Info className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">No events found</p>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}

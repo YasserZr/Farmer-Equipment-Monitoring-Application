@@ -103,10 +103,10 @@ export default function EquipmentPage() {
                 <Skeleton key={i} className="h-48" />
               ))}
             </div>
-          ) : pumpsData && pumpsData.content.length > 0 ? (
+          ) : pumpsData && pumpsData.content && pumpsData.content.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {pumpsData.content.map((pump) => (
+                {pumpsData.content?.map((pump) => (
                   <Card key={pump.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -193,10 +193,10 @@ export default function EquipmentPage() {
                 <Skeleton key={i} className="h-48" />
               ))}
             </div>
-          ) : sensorsData && sensorsData.content.length > 0 ? (
+          ) : sensorsData && sensorsData.content && sensorsData.content.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sensorsData.content.map((sensor) => (
+                {sensorsData.content?.map((sensor) => (
                   <Card key={sensor.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex items-start justify-between">

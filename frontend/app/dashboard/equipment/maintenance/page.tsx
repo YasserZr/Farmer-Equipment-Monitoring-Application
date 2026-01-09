@@ -48,8 +48,8 @@ export default function MaintenancePage() {
     }
   };
 
-  const upcoming = schedule?.filter(m => m.status === 'SCHEDULED' || m.status === 'IN_PROGRESS') || [];
-  const completed = schedule?.filter(m => m.status === 'COMPLETED') || [];
+  const upcoming = (schedule && Array.isArray(schedule)) ? schedule.filter(m => m.status === 'SCHEDULED' || m.status === 'IN_PROGRESS') : [];
+  const completed = (schedule && Array.isArray(schedule)) ? schedule.filter(m => m.status === 'COMPLETED') : [];
 
   return (
     <div className="space-y-6 max-w-7xl">
