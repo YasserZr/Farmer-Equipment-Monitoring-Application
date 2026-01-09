@@ -81,17 +81,17 @@ export default async function FarmerDetailPage({ params }: { params: { id: strin
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white font-bold text-2xl">
-                  {farmer.firstName[0]}{farmer.lastName[0]}
+                  {farmer.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
                 <div>
                   <CardTitle className="text-2xl">
-                    {farmer.firstName} {farmer.lastName}
+                    {farmer.name}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">ID: {farmer.id}</p>
                 </div>
               </div>
-              <Badge variant={farmer.active ? 'default' : 'secondary'}>
-                {farmer.active ? 'Active' : 'Inactive'}
+              <Badge variant="default">
+                {farmer.role}
               </Badge>
             </div>
           </CardHeader>
@@ -109,23 +109,7 @@ export default async function FarmerDetailPage({ params }: { params: { id: strin
                 <Phone className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">Phone</p>
-                  <p className="text-sm text-muted-foreground">{farmer.phoneNumber}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">Address</p>
-                  <p className="text-sm text-muted-foreground">{farmer.address}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">Date of Birth</p>
-                  <p className="text-sm text-muted-foreground">{formatDate(farmer.dateOfBirth)}</p>
+                  <p className="text-sm text-muted-foreground">{farmer.phone}</p>
                 </div>
               </div>
             </div>

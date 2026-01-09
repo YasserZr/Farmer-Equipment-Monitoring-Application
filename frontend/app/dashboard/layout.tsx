@@ -87,12 +87,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex items-center space-x-3 px-4 py-3">
               <div className="flex-shrink-0">
                 <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-semibold">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {user?.firstName} {user?.lastName}
+                  {user?.name}
                 </p>
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
               </div>
