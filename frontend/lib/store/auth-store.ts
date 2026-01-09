@@ -9,9 +9,9 @@ import { persist } from 'zustand/middleware';
 
 interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
+  role: 'OWNER' | 'MANAGER' | 'WORKER';
 }
 
 interface AuthState {
