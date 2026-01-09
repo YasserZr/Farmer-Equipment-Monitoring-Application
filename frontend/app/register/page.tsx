@@ -10,12 +10,10 @@ import { useCreateFarmer } from '@/hooks/use-farmers';
 import { useAuth } from '@/hooks/use-auth';
 
 const registerSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits'),
-  address: z.string().min(5, 'Address must be at least 5 characters'),
-  dateOfBirth: z.string(),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  role: z.enum(['OWNER', 'MANAGER', 'WORKER']),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -68,31 +66,17 @@ export default function RegisterPage() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                First Name *
+            <div className="md:col-span-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name *
               </label>
               <input
-                {...register('firstName')}
+                {...register('name')}
                 type="text"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
-              {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                Last Name *
-              </label>
-              <input
-                {...register('lastName')}
-                type="text"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-              />
-              {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
               )}
             </div>
 
@@ -111,44 +95,34 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                 Phone Number *
               </label>
               <input
-                {...register('phoneNumber')}
+                {...register('phone')}
                 type="tel"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
-              {errors.phoneNumber && (
-                <p className="mt-1 text-sm text-red-600">{errors.phoneNumber.message}</p>
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">
-                Date of Birth *
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                Role *
               </label>
-              <input
-                {...register('dateOfBirth')}
-                type="date"
+              <select
+                {...register('role')}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-              />
-              {errors.dateOfBirth && (
-                <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>
-              )}
-            </div>
-
-            <div className="md:col-span-2">
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                Address *
-              </label>
-              <textarea
-                {...register('address')}
-                rows={2}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-              />
-              {errors.address && (
-                <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
+              >
+                <option value="">Select a role</option>
+                <option value="OWNER">Owner</option>
+                <option value="MANAGER">Manager</option>
+                <option value="WORKER">Worker</option>
+              </select>
+              {errors.role && (
+                <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
               )}
             </div>
 

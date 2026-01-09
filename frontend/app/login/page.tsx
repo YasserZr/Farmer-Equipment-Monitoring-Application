@@ -32,12 +32,17 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual authentication endpoint
-      // For now, using mock authentication
-      const response = await apiClient.post('/api/auth/login', data);
+      // Mock authentication - bypassing auth service for now
+      // TODO: Implement proper authentication service
+      const mockUser = {
+        id: '1',
+        name: 'Admin User',
+        email: data.email,
+        role: 'OWNER' as const,
+      };
+      const mockToken = 'mock-jwt-token';
       
-      const { token, user } = response.data;
-      login(user, token);
+      login(mockUser, mockToken);
       
       toast.success('Login successful');
       router.push('/dashboard');

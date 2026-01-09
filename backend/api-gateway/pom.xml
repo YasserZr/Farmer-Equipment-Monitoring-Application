@@ -42,11 +42,13 @@
             <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
         </dependency>
 
-        <!-- Redis for Rate Limiting -->
+        <!-- Redis for Rate Limiting - DISABLED (Redis not in docker-compose) -->
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
         </dependency>
+        -->
 
         <!-- Spring Boot Actuator -->
         <dependency>

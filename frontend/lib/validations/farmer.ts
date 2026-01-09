@@ -5,30 +5,19 @@ import * as z from 'zod';
  */
 
 export const farmerFormSchema = z.object({
-  firstName: z.string()
-    .min(2, 'First name must be at least 2 characters')
-    .max(50, 'First name must not exceed 50 characters'),
-  lastName: z.string()
-    .min(2, 'Last name must be at least 2 characters')
-    .max(50, 'Last name must not exceed 50 characters'),
+  name: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must not exceed 100 characters'),
   email: z.string()
     .email('Invalid email address')
-    .min(1, 'Email is required'),
-  phoneNumber: z.string()
+    .min(1, 'Email is required')
+    .max(150, 'Email must not exceed 150 characters'),
+  phone: z.string()
     .min(10, 'Phone number must be at least 10 digits')
-    .regex(/^[0-9+\-\s()]+$/, 'Invalid phone number format'),
-  address: z.string()
-    .min(5, 'Address must be at least 5 characters')
-    .max(200, 'Address must not exceed 200 characters'),
-  dateOfBirth: z.string()
-    .min(1, 'Date of birth is required')
-    .refine((date) => {
-      const birthDate = new Date(date);
-      const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
-      return age >= 18 && age <= 120;
-    }, 'Farmer must be between 18 and 120 years old'),
-  active: z.boolean().optional().default(true),
+    .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/, 'Invalid phone number format'),
+  role: z.enum(['OWNER', 'MANAGER', 'WORKER'], {
+    required_error: 'Role is required',
+  }),
 });
 
 export const farmFormSchema = z.object({

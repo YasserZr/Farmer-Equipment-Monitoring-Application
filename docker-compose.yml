@@ -111,7 +111,7 @@ services:
     networks:
       - farm-network
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=composite
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       eureka-server:
@@ -161,6 +161,7 @@ services:
       - farm-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://farmers-db:5432/farmers_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
@@ -201,6 +202,7 @@ services:
       - farm-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://equipment-db:5432/equipment_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
@@ -241,6 +243,7 @@ services:
       - farm-network
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://supervision-db:5432/supervision_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres

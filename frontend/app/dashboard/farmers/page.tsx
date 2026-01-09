@@ -115,7 +115,7 @@ export default function FarmersPage() {
               onDelete={(id) => {
                 const farmer = data.content.find((f) => f.id === id);
                 if (farmer) {
-                  handleDeleteClick(id, `${farmer.firstName} ${farmer.lastName}`);
+                  handleDeleteClick(id, farmer.name);
                 }
               }}
               onPageChange={setPage}
@@ -127,7 +127,7 @@ export default function FarmersPage() {
                   key={farmer.id}
                   farmer={farmer}
                   onDelete={(id) =>
-                    handleDeleteClick(id, `${farmer.firstName} ${farmer.lastName}`)
+                    handleDeleteClick(id, farmer.name)
                   }
                 />
               ))}

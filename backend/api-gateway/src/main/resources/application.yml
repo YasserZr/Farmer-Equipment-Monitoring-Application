@@ -21,16 +21,16 @@ spring:
           predicates:
             - Path=/api/farmers/**
           filters:
-            - RewritePath=/api/farmers/(?<segment>.*), /${segment}
             - name: CircuitBreaker
               args:
                 name: farmersCircuitBreaker
                 fallbackUri: forward:/fallback/farmers
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
+            # Rate limiting disabled - Redis not available
+            # - name: RequestRateLimiter
+            #   args:
+            #     redis-rate-limiter.replenishRate: 10
+            #     redis-rate-limiter.burstCapacity: 20
+            #     redis-rate-limiter.requestedTokens: 1
         
         # Equipment Service Routes
         - id: equipment-service
@@ -38,16 +38,16 @@ spring:
           predicates:
             - Path=/api/equipment/**,/api/pumps/**,/api/sensors/**
           filters:
-            - RewritePath=/api/equipment/(?<segment>.*), /${segment}
             - name: CircuitBreaker
               args:
                 name: equipmentCircuitBreaker
                 fallbackUri: forward:/fallback/equipment
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
+            # Rate limiting disabled - Redis not available
+            # - name: RequestRateLimiter
+            #   args:
+            #     redis-rate-limiter.replenishRate: 10
+            #     redis-rate-limiter.burstCapacity: 20
+            #     redis-rate-limiter.requestedTokens: 1
         
         # Supervision Service Routes
         - id: supervision-service
@@ -55,16 +55,16 @@ spring:
           predicates:
             - Path=/api/supervision/**,/api/events/**,/api/statistics/**
           filters:
-            - RewritePath=/api/supervision/(?<segment>.*), /${segment}
             - name: CircuitBreaker
               args:
                 name: supervisionCircuitBreaker
                 fallbackUri: forward:/fallback/supervision
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
+            # Rate limiting disabled - Redis not available
+            # - name: RequestRateLimiter
+            #   args:
+            #     redis-rate-limiter.replenishRate: 10
+            #     redis-rate-limiter.burstCapacity: 20
+            #     redis-rate-limiter.requestedTokens: 1
         
         # WebSocket route for Supervision Service
         - id: supervision-websocket
@@ -78,7 +78,7 @@ spring:
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins: "*"
+            allowedOriginPatterns: "*"
             allowedMethods:
               - GET
               - POST
@@ -94,13 +94,13 @@ spring:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
   
-  # Redis configuration for rate limiting
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      timeout: 2000ms
+  # Redis configuration for rate limiting (disabled)
+  # data:
+  #   redis:
+  #     host: ${REDIS_HOST:localhost}
+  #     port: ${REDIS_PORT:6379}
+  #     password: ${REDIS_PASSWORD:}
+  #     timeout: 2000ms
 
 # Eureka Client Configuration
 eureka:

@@ -4,15 +4,14 @@
 
 export interface Farmer {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  phoneNumber: string;
-  address: string;
-  dateOfBirth: string;
-  active: boolean;
+  phone: string;
+  role: 'OWNER' | 'MANAGER' | 'WORKER';
   registrationDate: string;
-  lastModified: string;
+  farmCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Farm {
@@ -26,22 +25,17 @@ export interface Farm {
 }
 
 export interface CreateFarmerRequest {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  phoneNumber: string;
-  address: string;
-  dateOfBirth: string;
+  phone: string;
+  role: 'OWNER' | 'MANAGER' | 'WORKER';
 }
 
 export interface UpdateFarmerRequest {
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   email?: string;
-  phoneNumber?: string;
-  address?: string;
-  dateOfBirth?: string;
-  active?: boolean;
+  phone?: string;
+  role?: 'OWNER' | 'MANAGER' | 'WORKER';
 }
 
 export interface CreateFarmRequest {

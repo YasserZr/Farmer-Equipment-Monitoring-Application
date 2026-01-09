@@ -41,7 +41,7 @@ export function FarmersDataTable({ data, onDelete, onPageChange }: FarmersDataTa
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Registration Date</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -58,22 +58,22 @@ export function FarmersDataTable({ data, onDelete, onPageChange }: FarmersDataTa
                   <TableCell>
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-                        {getInitials(farmer.firstName, farmer.lastName)}
+                        {getInitials(farmer.name)}
                       </div>
                       <div>
                         <div className="font-medium">
-                          {farmer.firstName} {farmer.lastName}
+                          {farmer.name}
                         </div>
                         <div className="text-sm text-muted-foreground">ID: {farmer.id}</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>{farmer.email}</TableCell>
-                  <TableCell>{farmer.phoneNumber}</TableCell>
+                  <TableCell>{farmer.phone}</TableCell>
                   <TableCell>{formatDate(farmer.registrationDate)}</TableCell>
                   <TableCell>
-                    <Badge variant={farmer.active ? 'default' : 'secondary'}>
-                      {farmer.active ? 'Active' : 'Inactive'}
+                    <Badge variant="default">
+                      {farmer.role}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">

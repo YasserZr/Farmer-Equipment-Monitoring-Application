@@ -20,17 +20,17 @@ export function FarmerCard({ farmer, onDelete }: FarmerCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-lg">
-              {getInitials(farmer.firstName, farmer.lastName)}
+              {getInitials(farmer.name)}
             </div>
             <div>
               <h3 className="text-lg font-semibold">
-                {farmer.firstName} {farmer.lastName}
+                {farmer.name}
               </h3>
               <p className="text-sm text-muted-foreground">ID: {farmer.id}</p>
             </div>
           </div>
-          <Badge variant={farmer.active ? 'default' : 'secondary'}>
-            {farmer.active ? 'Active' : 'Inactive'}
+          <Badge variant="default">
+            {farmer.role}
           </Badge>
         </div>
       </CardHeader>
@@ -42,11 +42,7 @@ export function FarmerCard({ farmer, onDelete }: FarmerCardProps) {
         </div>
         <div className="flex items-center space-x-2 text-sm">
           <Phone className="w-4 h-4 text-muted-foreground" />
-          <span className="text-muted-foreground">{farmer.phoneNumber}</span>
-        </div>
-        <div className="flex items-center space-x-2 text-sm">
-          <MapPin className="w-4 h-4 text-muted-foreground" />
-          <span className="text-muted-foreground truncate">{farmer.address}</span>
+          <span className="text-muted-foreground">{farmer.phone}</span>
         </div>
         <div className="pt-2 text-xs text-muted-foreground">
           Registered: {formatDate(farmer.registrationDate)}

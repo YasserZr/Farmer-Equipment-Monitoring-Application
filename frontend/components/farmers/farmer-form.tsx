@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { farmerFormSchema, type FarmerFormValues } from '@/lib/validations/farmer';
 import type { Farmer } from '@/types/farmer';
 
@@ -27,13 +27,10 @@ export function FarmerForm({ farmer, onSubmit, isLoading }: FarmerFormProps) {
   const form = useForm<FarmerFormValues>({
     resolver: zodResolver(farmerFormSchema),
     defaultValues: {
-      firstName: farmer?.firstName || '',
-      lastName: farmer?.lastName || '',
+      name: farmer?.name || '',
       email: farmer?.email || '',
-      phoneNumber: farmer?.phoneNumber || '',
-      address: farmer?.address || '',
-      dateOfBirth: farmer?.dateOfBirth || '',
-      active: farmer?.active ?? true,
+      phone: farmer?.phone || '',
+      role: farmer?.role || 'OWNER',
     },
   });
 
@@ -47,26 +44,12 @@ export function FarmerForm({ farmer, onSubmit, isLoading }: FarmerFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="firstName"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name *</FormLabel>
+                <FormLabel>Full Name *</FormLabel>
                 <FormControl>
-                  <Input placeholder="John" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Doe" {...field} />
+                  <Input placeholder="John Doe" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -89,7 +72,7 @@ export function FarmerForm({ farmer, onSubmit, isLoading }: FarmerFormProps) {
 
           <FormField
             control={form.control}
-            name="phoneNumber"
+            name="phone"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Phone Number *</FormLabel>
@@ -103,38 +86,27 @@ export function FarmerForm({ farmer, onSubmit, isLoading }: FarmerFormProps) {
 
           <FormField
             control={form.control}
-            name="dateOfBirth"
+            name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date of Birth *</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormDescription>Must be 18 years or older</FormDescription>
+                <FormLabel>Role *</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="OWNER">Owner</SelectItem>
+                    <SelectItem value="MANAGER">Manager</SelectItem>
+                    <SelectItem value="WORKER">Worker</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Address *</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="123 Farm Road, Rural County, State, ZIP"
-                  className="resize-none"
-                  rows={3}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <div className="flex justify-end space-x-4">
           <Button type="submit" disabled={isLoading}>
@@ -145,3 +117,4 @@ export function FarmerForm({ farmer, onSubmit, isLoading }: FarmerFormProps) {
     </Form>
   );
 }
+
